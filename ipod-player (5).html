@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>iPod Classic</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --screen-h: 150px; --wheel-size: 160px;
+    --screen-bg: #9bb5c8; --screen-menu-bg: #4a7fa5;
+    --screen-text: #0a1628; --highlight: #1a4f7a; --highlight-text: #fff;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at center, #2a2a2a 0%, #0d0d0d 70%, #000 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--font-mono); overflow: hidden; position: relative;
+    touch-action: none;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.6) 100%);
+    pointer-events:none; z-index:0;
+  }
+  body::after {
+    content:''; position:fixed; inset:0; opacity:.03;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0;
+  }
+  .top-controls { position:relative; z-index:10; display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+  .ctrl-btn {
+    background:rgba(255,255,255,.07); color:rgba(255,255,255,.45);
+    border:1px solid rgba(255,255,255,.11); padding:5px 13px;
+    border-radius:20px; font-family:var(--font-mono); font-size:11px;
+    cursor:pointer; letter-spacing:.04em; transition:all .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .ctrl-btn:hover { background:rgba(255,255,255,.14); color:rgba(255,255,255,.75); border-color:rgba(255,255,255,.22); }
+  .ctrl-btn:active { transform:scale(.95); }
+  .sep { width:1px; height:14px; background:rgba(255,255,255,.12); }
+  .size-btn {
+    background:rgba(255,255,255,.07); color:rgba(255,255,255,.45);
+    border:1px solid rgba(255,255,255,.11); width:26px; height:26px;
+    border-radius:50%; font-size:15px; cursor:pointer; transition:all .2s;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+    font-family:var(--font-mono); -webkit-tap-highlight-color:transparent;
+  }
+  .size-btn:hover { background:rgba(255,255,255,.14); color:rgba(255,255,255,.75); border-color:rgba(255,255,255,.22); }
+  .size-btn:active { transform:scale(.9); }
+  .size-btn:disabled { opacity:.22; cursor:default; transform:none !important; }
+  #fileInput, #folderInput { display:none; }
+  .ipod-scaler { position:relative; z-index:5; transform-origin:center top; transition:transform .28s cubic-bezier(.34,1.4,.64,1); }
+  .ipod {
+    width:240px;
+    background:linear-gradient(160deg,#f2f2f2 0%,#e0e0e0 40%,#d0d0d0 100%);
+    border-radius:28px; padding:14px 14px 20px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.15),0 4px 8px rgba(0,0,0,.3),
+      0 20px 60px rgba(0,0,0,.7),0 40px 80px rgba(0,0,0,.4),
+      inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.1);
+    user-select:none; position:relative;
+  }
+  .ipod::before {
+    content:''; position:absolute; inset:0; border-radius:28px;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:1;
+  }
+  .ipod::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:55%;
+    border-radius:28px 28px 60% 60%;
+    background:linear-gradient(170deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,.05) 60%,transparent 100%);
+    pointer-events:none; z-index:2;
+  }
+  .screen-bezel {
+    background:#1a1a1a; border-radius:10px; padding:4px;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.4);
+    margin-bottom:12px; position:relative; z-index:3;
+  }
+  .screen {
+    width:100%; height:var(--screen-h); background:var(--screen-bg);
+    border-radius:7px; overflow:hidden; position:relative; font-family:var(--font-mono);
+  }
+  .screen::after {
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+    pointer-events:none; z-index:100;
+  }
+  .status-bar {
+    background:var(--screen-menu-bg); height:16px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 5px; color:#d0e8f8; font-size:7px;
+    font-family:var(--font-mono); letter-spacing:.05em;
+    border-bottom:1px solid rgba(0,0,0,.2);
+    position:relative; z-index:10; transition:background .3s;
+  }
+  .status-bar.err { background:#7a1f1f; }
+  .battery-body {
+    width:14px; height:7px; border:1px solid #d0e8f8; border-radius:1px;
+    position:relative; display:flex; align-items:center; padding:1px;
+  }
+  .battery-body::after {
+    content:''; position:absolute; right:-3px; top:50%;
+    transform:translateY(-50%); width:2px; height:4px;
+    background:#d0e8f8; border-radius:0 1px 1px 0;
+  }
+  .battery-fill { height:100%; width:75%; background:#8de88d; border-radius:1px; transition:width 1s; }
+  .screen-content { height:calc(100% - 16px); position:relative; overflow:hidden; }
+  .view {
+    position:absolute; inset:0; background:var(--screen-bg);
+    transition:transform .22s cubic-bezier(.4,0,.2,1); overflow:hidden;
+  }
+  .view.active    { transform:translateX(0);     pointer-events:auto; }
+  .view.off-right { transform:translateX(100%);  pointer-events:none; }
+  .view.off-left  { transform:translateX(-100%); pointer-events:none; }
+  .menu-header {
+    background:var(--screen-menu-bg); color:#d0e8f8; font-size:9px;
+    padding:3px 6px; border-bottom:1px solid rgba(0,0,0,.25);
+    letter-spacing:.1em; text-transform:uppercase;
+    position:sticky; top:0; z-index:5;
+  }
+  .menu-list { list-style:none; overflow-y:auto; max-height:calc(100% - 18px); }
+  .menu-list::-webkit-scrollbar { display:none; }
+  .menu-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:3px 6px; font-size:9px; font-family:var(--font-mono);
+    color:var(--screen-text); border-bottom:1px solid rgba(0,0,0,.06);
+    cursor:pointer; min-height:18px; gap:4px;
+  }
+  .menu-item.selected { background:var(--highlight); color:var(--highlight-text); }
+  .menu-item.selected .mi-sub { color:rgba(255,255,255,.6); }
+  .menu-item.selected .stat-rank { color:rgba(255,255,255,.5); }
+  .menu-item.selected .stat-count { color:rgba(255,255,255,.8); }
+  .arr { font-size:7px; opacity:.6; flex-shrink:0; }
+  .mi-art {
+    width:14px; height:14px; border-radius:2px;
+    flex-shrink:0; overflow:hidden; background:#1a4f7a;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mi-art img { width:100%; height:100%; object-fit:cover; display:block; }
+  .mi-art-placeholder { font-size:8px; line-height:1; }
+  .mi-label { flex:1; overflow:hidden; }
+  .mi-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .mi-sub { font-size:7px; opacity:.65; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  /* stat leaderboard items */
+  .stat-rank { font-size:8px; color:#5a7a90; min-width:12px; flex-shrink:0; font-family:var(--font-mono); }
+  .stat-count { font-size:7px; color:#3a6080; flex-shrink:0; white-space:nowrap; }
+  /* stats overview screen */
+  .stats-overview {
+    display:flex; flex-direction:column; justify-content:center;
+    height:100%; padding:6px 8px; gap:0;
+  }
+  .stat-row {
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:3px 0; border-bottom:1px solid rgba(0,0,0,.06);
+    font-size:8px; font-family:var(--font-mono); color:var(--screen-text);
+  }
+  .stat-row:last-child { border-bottom:none; }
+  .stat-row-label { color:#3a6080; font-size:7px; flex-shrink:0; margin-right:4px; }
+  .stat-row-value { font-size:8px; font-weight:bold; color:var(--screen-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; max-width:120px; }
+  /* Now Playing */
+  .now-playing { display:flex; flex-direction:column; height:100%; overflow:hidden; }
+  .album-art {
+    width:58px; height:58px; margin:5px auto 3px;
+    border-radius:4px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.4);
+    flex-shrink:0; position:relative;
+  }
+  .album-art-img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; display:none; }
+  .album-art-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .track-info { text-align:center; padding:0 6px; flex-shrink:0; }
+  .track-title {
+    font-size:8px; font-family:var(--font-mono); color:var(--screen-text); font-weight:bold;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; margin:0 auto 2px;
+  }
+  .track-artist {
+    font-size:7px; font-family:var(--font-mono); color:#3a6080;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; margin:0 auto;
+  }
+  .progress-section { padding:5px 8px 2px; flex-shrink:0; }
+  .progress-bar-track {
+    width:100%; height:3px; background:rgba(0,0,0,.2);
+    border-radius:2px; position:relative; cursor:pointer; margin-bottom:3px;
+  }
+  .progress-bar-fill { height:100%; background:var(--highlight); border-radius:2px; width:0%; position:relative; }
+  .progress-bar-fill::after {
+    content:''; position:absolute; right:-3px; top:-2px;
+    width:7px; height:7px; background:var(--highlight);
+    border-radius:50%; box-shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  .time-display { display:flex; justify-content:space-between; font-size:7px; font-family:var(--font-mono); color:#3a6080; }
+  .play-state-row { display:flex; align-items:center; justify-content:center; gap:10px; padding:2px 0; }
+  .play-icon { font-size:11px; color:var(--highlight); }
+  .pb-icon { font-size:8px; color:#3a6080; opacity:.4; }
+  .pb-icon.on { opacity:1; color:var(--highlight); }
+  .ipod-brand {
+    text-align:center; font-size:9px; color:#aaa; letter-spacing:.35em;
+    margin-bottom:8px; font-family:var(--font-mono); position:relative; z-index:3; text-transform:uppercase;
+  }
+  /* wheel */
+  .wheel-container { position:relative; z-index:3; width:var(--wheel-size); height:var(--wheel-size); margin:0 auto; }
+  .wheel {
+    width:100%; height:100%; border-radius:50%;
+    background:radial-gradient(circle at 38% 38%,#f0f0f0 0%,#d8d8d8 35%,#c0c0c0 65%,#b0b0b0 100%);
+    position:relative;
+    box-shadow:0 2px 4px rgba(0,0,0,.3),0 6px 16px rgba(0,0,0,.25),
+      inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.1);
+    cursor:default; touch-action:none;
+  }
+  .wheel::before {
+    content:''; position:absolute; inset:18%; border-radius:50%;
+    box-shadow:0 0 0 1px rgba(0,0,0,.15),inset 0 2px 4px rgba(0,0,0,.2),inset 0 -1px 2px rgba(255,255,255,.5);
+    pointer-events:none;
+  }
+  .center-btn {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:42%; height:42%; border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#f5f5f5 0%,#e0e0e0 50%,#cacaca 100%);
+    box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(0,0,0,.1);
+    cursor:pointer; z-index:5; transition:transform .08s,box-shadow .08s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .center-btn.pressed { transform:translate(-50%,-50%) scale(.94); box-shadow:0 0 2px rgba(0,0,0,.3),inset 0 2px 3px rgba(0,0,0,.15); }
+  .wl { position:absolute; font-size:7px; font-family:var(--font-mono); color:#888; pointer-events:none; z-index:3; font-weight:bold; letter-spacing:.05em; }
+  .wl.t { top:8px; left:50%; transform:translateX(-50%); }
+  .wl.b { bottom:8px; left:50%; transform:translateX(-50%); }
+  .wl.l { left:8px; top:50%; transform:translateY(-50%); }
+  .wl.r { right:8px; top:50%; transform:translateY(-50%); }
+  /* Wheel zones — enlarged for 44px+ touch targets */
+  .wz {
+    position:absolute; cursor:pointer; z-index:4;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;
+  }
+  .wz.t { top:4%; left:28%; width:44%; height:24%; }
+  .wz.b { bottom:4%; left:28%; width:44%; height:24%; }
+  .wz.l { left:4%; top:28%; width:24%; height:44%; }
+  .wz.r { right:4%; top:28%; width:24%; height:44%; }
+  .flash-ring { position:absolute; inset:0; border-radius:50%; pointer-events:none; background:rgba(255,255,255,0); transition:background .1s; z-index:6; }
+  .flash-ring.flash { background:rgba(255,255,255,.18); }
+  /* delete button on song/album rows */
+  .del-btn {
+    width:14px; height:14px; border-radius:2px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; color:#885555; opacity:0.7; cursor:pointer;
+    border:1px solid rgba(136,85,85,0.3);
+    transition:opacity 0.15s;
+  }
+  .menu-item.selected .del-btn { color:#ffaaaa; border-color:rgba(255,170,170,0.4); opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="top-controls">
+  <button class="ctrl-btn" id="addSongsBtn">+ Add Songs</button>
+  <button class="ctrl-btn" id="addFolderBtn">+ Add Folder</button>
+  <div class="sep"></div>
+  <button class="size-btn" id="btnShrink" title="Shrink">&#8722;</button>
+  <button class="size-btn" id="btnGrow"   title="Enlarge">+</button>
+</div>
+<input type="file" id="fileInput" accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.opus,.wma" multiple>
+<input type="file" id="folderInput" accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.opus,.wma" multiple webkitdirectory mozdirectory>
+
+<div class="ipod-scaler" id="ipodScaler">
+  <div class="ipod">
+    <div class="screen-bezel">
+      <div class="screen">
+        <div class="status-bar" id="statusBar">
+          <span id="clockEl">12:00</span>
+          <span id="statusTitle">iPod</span>
+          <span class="battery-body"><span class="battery-fill" id="batteryFill"></span></span>
+        </div>
+        <div class="screen-content">
+
+          <!-- Main Menu -->
+          <div class="view active" id="viewMainMenu">
+            <div class="menu-header">iPod</div>
+            <ul class="menu-list" id="listMain">
+              <li class="menu-item" data-action="nav:viewMusic">     <span class="mi-label"><span class="mi-title">Music</span></span>       <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewNowPlaying"><span class="mi-label"><span class="mi-title">Now Playing</span></span> <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewStats">     <span class="mi-label"><span class="mi-title">Stats</span></span>       <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewSettings">  <span class="mi-label"><span class="mi-title">Settings</span></span>    <span class="arr">&#9658;</span></li>
+            </ul>
+          </div>
+
+          <!-- Music -->
+          <div class="view off-right" id="viewMusic">
+            <div class="menu-header">Music</div>
+            <ul class="menu-list" id="listMusic">
+              <li class="menu-item" data-action="nav:viewArtists">  <span class="mi-label"><span class="mi-title">Artists</span></span>   <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewAlbums">   <span class="mi-label"><span class="mi-title">Albums</span></span>    <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewSongs">    <span class="mi-label"><span class="mi-title">Songs</span></span>     <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewPlaylists"><span class="mi-label"><span class="mi-title">Playlists</span></span> <span class="arr">&#9658;</span></li>
+            </ul>
+          </div>
+
+          <!-- Songs flat -->
+          <div class="view off-right" id="viewSongs">
+            <div class="menu-header">Songs</div>
+            <ul class="menu-list" id="listSongs"></ul>
+          </div>
+
+          <!-- Artists -->
+          <div class="view off-right" id="viewArtists">
+            <div class="menu-header">Artists</div>
+            <ul class="menu-list" id="listArtists"></ul>
+          </div>
+
+          <!-- Albums -->
+          <div class="view off-right" id="viewAlbums">
+            <div class="menu-header">Albums</div>
+            <ul class="menu-list" id="listAlbums"></ul>
+          </div>
+
+          <!-- Album Tracks -->
+          <div class="view off-right" id="viewAlbumTracks">
+            <div class="menu-header" id="albumTracksHeader">Album</div>
+            <ul class="menu-list" id="listAlbumTracks"></ul>
+          </div>
+
+          <!-- Delete Song confirm -->
+          <div class="view off-right" id="viewDeleteSong">
+            <div class="menu-header">Remove Song</div>
+            <ul class="menu-list" id="listDeleteSong">
+              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteSongInfo" data-noselect="1"></li>
+              <li class="menu-item" data-action="action:confirmDeleteSong" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove</span></span><span style="font-size:9px">&#10005;</span></li>
+              <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
+            </ul>
+          </div>
+
+          <!-- Delete Album confirm -->
+          <div class="view off-right" id="viewDeleteAlbum">
+            <div class="menu-header">Remove Album</div>
+            <ul class="menu-list" id="listDeleteAlbum">
+              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteAlbumInfo" data-noselect="1"></li>
+              <li class="menu-item" data-action="action:confirmDeleteAlbum" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove Album</span></span><span style="font-size:9px">&#10005;</span></li>
+              <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
+            </ul>
+          </div>
+
+          <!-- Artist Albums -->
+          <div class="view off-right" id="viewArtistAlbums">
+            <div class="menu-header" id="artistAlbumsHeader">Artist</div>
+            <ul class="menu-list" id="listArtistAlbums"></ul>
+          </div>
+
+          <!-- Playlists -->
+          <div class="view off-right" id="viewPlaylists">
+            <div class="menu-header">Playlists</div>
+            <ul class="menu-list">
+              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center;">No playlists</li>
+            </ul>
+          </div>
+
+          <!-- Settings -->
+          <div class="view off-right" id="viewSettings">
+            <div class="menu-header">Settings</div>
+            <ul class="menu-list" id="listSettings">
+              <li class="menu-item" data-action="toggle:shuffle"><span class="mi-label"><span class="mi-title">Shuffle</span></span><span id="shuffleVal" style="font-size:8px;color:#5a8099">Off</span></li>
+              <li class="menu-item" data-action="toggle:repeat"> <span class="mi-label"><span class="mi-title">Repeat</span></span>  <span id="repeatVal"  style="font-size:8px;color:#5a8099">Off</span></li>
+              <li class="menu-item" data-action="action:clearLibrary"><span class="mi-label"><span class="mi-title">Clear Library</span></span><span style="font-size:7px;color:#884444">&#10005;</span></li>
+            </ul>
+          </div>
+
+          <!-- Stats Menu -->
+          <div class="view off-right" id="viewStats">
+            <div class="menu-header">Stats</div>
+            <ul class="menu-list" id="listStats">
+              <li class="menu-item" data-action="nav:viewStatsOverview"> <span class="mi-label"><span class="mi-title">Overview</span></span>    <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewTopSongs">      <span class="mi-label"><span class="mi-title">Top Songs</span></span>    <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewTopArtists">    <span class="mi-label"><span class="mi-title">Top Artists</span></span>  <span class="arr">&#9658;</span></li>
+              <li class="menu-item" data-action="nav:viewTopAlbums">     <span class="mi-label"><span class="mi-title">Top Albums</span></span>   <span class="arr">&#9658;</span></li>
+            </ul>
+          </div>
+
+          <!-- Stats: Overview -->
+          <div class="view off-right" id="viewStatsOverview">
+            <div class="menu-header">Overview</div>
+            <div class="stats-overview" id="statsOverviewContent">
+              <div class="stat-row"><span class="stat-row-label">Top Song</span>    <span class="stat-row-value" id="ovTopSong">—</span></div>
+              <div class="stat-row"><span class="stat-row-label">Top Album</span>   <span class="stat-row-value" id="ovTopAlbum">—</span></div>
+              <div class="stat-row"><span class="stat-row-label">Top Artist</span>  <span class="stat-row-value" id="ovTopArtist">—</span></div>
+              <div class="stat-row"><span class="stat-row-label">Listened</span>    <span class="stat-row-value" id="ovListened">0 min</span></div>
+            </div>
+          </div>
+
+          <!-- Stats: Top Songs -->
+          <div class="view off-right" id="viewTopSongs">
+            <div class="menu-header">Top Songs</div>
+            <ul class="menu-list" id="listTopSongs"></ul>
+          </div>
+
+          <!-- Stats: Top Artists -->
+          <div class="view off-right" id="viewTopArtists">
+            <div class="menu-header">Top Artists</div>
+            <ul class="menu-list" id="listTopArtists"></ul>
+          </div>
+
+          <!-- Stats: Top Albums -->
+          <div class="view off-right" id="viewTopAlbums">
+            <div class="menu-header">Top Albums</div>
+            <ul class="menu-list" id="listTopAlbums"></ul>
+          </div>
+
+          <!-- Now Playing -->
+          <div class="view off-right" id="viewNowPlaying">
+            <div class="now-playing">
+              <div class="album-art" id="npArtBox">
+                <div class="album-art-placeholder" id="npArtPlaceholder" style="background:linear-gradient(135deg,#1a4f7a,#4a9fd4,#1a4f7a)">&#127925;</div>
+                <img class="album-art-img" id="npArtImg" src="" alt="">
+              </div>
+              <div class="track-info">
+                <div class="track-title"  id="npTitle">No Track</div>
+                <div class="track-artist" id="npArtist">&#8212;</div>
+              </div>
+              <div class="progress-section">
+                <div class="progress-bar-track" id="progressTrack">
+                  <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                  <span id="timeEl">0:00</span>
+                  <span id="timeRem">-0:00</span>
+                </div>
+              </div>
+              <div class="play-state-row">
+                <span class="pb-icon" id="shuffleIcon">&#8644;</span>
+                <span class="play-icon" id="playIcon">&#9654;</span>
+                <span class="pb-icon"  id="repeatIcon">&#8634;</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /screen-content -->
+      </div><!-- /screen -->
+    </div><!-- /screen-bezel -->
+
+    <div class="ipod-brand">iPod</div>
+
+    <div class="wheel-container">
+      <div class="wheel" id="wheel">
+        <div class="flash-ring" id="flashRing"></div>
+        <div class="wl t">MENU</div>
+        <div class="wl b">&#9654;II</div>
+        <div class="wl l">&#9664;&#9664;</div>
+        <div class="wl r">&#9654;&#9654;</div>
+        <div class="wz t" id="wzTop"></div>
+        <div class="wz b" id="wzBot"></div>
+        <div class="wz l" id="wzLeft"></div>
+        <div class="wz r" id="wzRight"></div>
+        <div class="center-btn" id="centerBtn"></div>
+      </div>
+    </div>
+
+  </div><!-- /ipod -->
+</div><!-- /scaler -->
+
+<audio id="audioEl" preload="auto"></audio>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+const ST = {
+  songs:      [],
+  albums:     new Map(),
+  artists:    new Map(),
+  artCache:   new Map(),
+  curIdx:     -1,
+  playing:    false,
+  shuffle:    false,
+  repeatMode: 0,
+  curView:    'viewMainMenu',
+  navStack:   [],
+  selIdx:     0,
+  scaleStep:  2,
+  pendingDeleteSongIdx: -1,   // song index pending deletion
+  pendingDeleteAlbumKey: null, // album key pending deletion
+};
+const SCALES = [0.6, 0.8, 1.0, 1.2];
+
+const VIEW_LIST = {
+  viewMainMenu:'listMain', viewMusic:'listMusic',
+  viewSongs:'listSongs', viewArtists:'listArtists',
+  viewAlbums:'listAlbums', viewAlbumTracks:'listAlbumTracks',
+  viewDeleteSong:'listDeleteSong', viewDeleteAlbum:'listDeleteAlbum',
+  viewArtistAlbums:'listArtistAlbums', viewPlaylists:null,
+  viewSettings:'listSettings',
+  viewStats:'listStats', viewTopSongs:'listTopSongs',
+  viewTopArtists:'listTopArtists', viewTopAlbums:'listTopAlbums',
+  viewStatsOverview:null, viewNowPlaying:null,
+};
+const VIEW_TITLE = {
+  viewMainMenu:'iPod', viewMusic:'Music', viewSongs:'Songs',
+  viewArtists:'Artists', viewAlbums:'Albums', viewAlbumTracks:'Album',
+  viewDeleteSong:'Remove', viewDeleteAlbum:'Remove',
+  viewArtistAlbums:'Artist', viewPlaylists:'Playlists',
+  viewSettings:'Settings', viewStats:'Stats',
+  viewStatsOverview:'Overview', viewTopSongs:'Top Songs',
+  viewTopArtists:'Top Artists', viewTopAlbums:'Top Albums',
+  viewNowPlaying:'Now Playing',
+};
+
+// ── DOM ──
+const audio            = document.getElementById('audioEl');
+const scaler           = document.getElementById('ipodScaler');
+const statusBar        = document.getElementById('statusBar');
+const statusTitleEl    = document.getElementById('statusTitle');
+const flashRing        = document.getElementById('flashRing');
+const centerBtn        = document.getElementById('centerBtn');
+const wheel            = document.getElementById('wheel');
+const progressFill     = document.getElementById('progressFill');
+const progressTrack    = document.getElementById('progressTrack');
+const npArtImg         = document.getElementById('npArtImg');
+const npArtPlaceholder = document.getElementById('npArtPlaceholder');
+
+function listItems(vid) {
+  const lid = VIEW_LIST[vid];
+  if (!lid) return [];
+  return Array.from(document.getElementById(lid)?.querySelectorAll('.menu-item:not([data-noselect])') || []);
+}
+
+// ══════════════════════════════════════════════════════
+//  STATS — localStorage persistence
+// ══════════════════════════════════════════════════════
+const LS_KEY = 'ipod_stats_v1';
+
+function loadStats() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+}
+function saveStats(s) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {}
+}
+
+// stats shape:
+// { songs: { "artist::title": count }, artists: { name: count },
+//   albums: { key: count }, secondsListened: number }
+let STATS = loadStats();
+if (!STATS.songs)   STATS.songs   = {};
+if (!STATS.artists) STATS.artists = {};
+if (!STATS.albums)  STATS.albums  = {};
+if (!STATS.secondsListened) STATS.secondsListened = 0;
+
+function statSongKey(song) { return (song.artist + '::' + song.title).toLowerCase(); }
+
+function recordPlay(song) {
+  const sk = statSongKey(song);
+  STATS.songs[sk]   = (STATS.songs[sk]   || 0) + 1;
+  const ak = song.artist.toLowerCase();
+  STATS.artists[ak] = (STATS.artists[ak] || 0) + 1;
+  const abk = albumKey(song.artist, song.album);
+  STATS.albums[abk] = (STATS.albums[abk] || 0) + 1;
+  saveStats(STATS);
+}
+
+// Accumulate seconds while playing (timeupdate fires ~4x/sec)
+let _lastStatTime = 0;
+audio.addEventListener('timeupdate', () => {
+  if (!ST.playing) return;
+  const now = audio.currentTime;
+  if (_lastStatTime > 0 && now > _lastStatTime) {
+    STATS.secondsListened += (now - _lastStatTime);
+    saveStats(STATS);
+  }
+  _lastStatTime = now;
+});
+audio.addEventListener('pause', () => { _lastStatTime = 0; });
+audio.addEventListener('play',  () => { _lastStatTime = audio.currentTime; });
+
+function buildStatsViews() {
+  // Overview
+  const topSongEntry   = topN(STATS.songs, 1)[0];
+  const topArtistEntry = topN(STATS.artists, 1)[0];
+  const topAlbumEntry  = topN(STATS.albums, 1)[0];
+
+  // resolve display names
+  let topSongName = '—', topArtistName = '—', topAlbumName = '—';
+  if (topSongEntry) {
+    const found = ST.songs.find(s => statSongKey(s) === topSongEntry[0]);
+    topSongName = found ? found.title : topSongEntry[0].split('::')[1] || '—';
+  }
+  if (topArtistEntry) {
+    const found = [...ST.artists.values()].find(a => a.name.toLowerCase() === topArtistEntry[0]);
+    topArtistName = found ? found.name : topArtistEntry[0];
+  }
+  if (topAlbumEntry) {
+    const alb = ST.albums.get(topAlbumEntry[0]);
+    topAlbumName = alb ? alb.name : topAlbumEntry[0].split('::')[1] || '—';
+  }
+
+  const totalMins = Math.floor(STATS.secondsListened / 60);
+  const hrs  = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  const listenedStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + ' min';
+
+  document.getElementById('ovTopSong').textContent    = topSongName;
+  document.getElementById('ovTopAlbum').textContent   = topAlbumName;
+  document.getElementById('ovTopArtist').textContent  = topArtistName;
+  document.getElementById('ovListened').textContent   = listenedStr;
+
+  // Top Songs leaderboard
+  buildLeaderboard('listTopSongs', topN(STATS.songs, 5), key => {
+    const found = ST.songs.find(s => statSongKey(s) === key);
+    return found ? found.title + ' \u2013 ' + found.artist : key.split('::')[1] || key;
+  });
+
+  // Top Artists leaderboard
+  buildLeaderboard('listTopArtists', topN(STATS.artists, 5), key => {
+    const found = [...(ST.artists.values())].find(a => a.name.toLowerCase() === key);
+    return found ? found.name : key;
+  });
+
+  // Top Albums leaderboard
+  buildLeaderboard('listTopAlbums', topN(STATS.albums, 5), key => {
+    const alb = ST.albums.get(key);
+    return alb ? alb.name + ' \u2013 ' + alb.artist : key.split('::')[1] || key;
+  });
+}
+
+function topN(obj, n) {
+  return Object.entries(obj)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n);
+}
+
+function buildLeaderboard(listId, entries, labelFn) {
+  const ul = document.getElementById(listId);
+  ul.innerHTML = '';
+  if (!entries.length) {
+    ul.innerHTML = '<li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center;">No plays yet</li>';
+    return;
+  }
+  const medals = ['1', '2', '3', '4', '5'];
+  entries.forEach(([key, count], i) => {
+    const li = document.createElement('li');
+    li.className = 'menu-item';
+    const rank = document.createElement('span');
+    rank.className = 'stat-rank';
+    rank.textContent = medals[i] + '.';
+    const lbl = document.createElement('span');
+    lbl.className = 'mi-label';
+    const title = document.createElement('span');
+    title.className = 'mi-title';
+    title.textContent = labelFn(key);
+    lbl.appendChild(title);
+    const cnt = document.createElement('span');
+    cnt.className = 'stat-count';
+    cnt.textContent = count + (count === 1 ? ' play' : ' plays');
+    li.appendChild(rank);
+    li.appendChild(lbl);
+    li.appendChild(cnt);
+    ul.appendChild(li);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  CLICK SOUNDS
+// ══════════════════════════════════════════════════════
+let actx = null;
+function getActx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function clickSound(loud) {
+  try {
+    const ctx = getActx();
+    const n = Math.round(ctx.sampleRate * 0.013);
+    const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random()*2-1) * Math.exp(-i/(n*0.12));
+    const src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = buf; g.gain.value = loud ? 0.28 : 0.14;
+    src.connect(g).connect(ctx.destination); src.start();
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════
+//  CLOCK + BATTERY
+// ══════════════════════════════════════════════════════
+function tickClock() {
+  const n = new Date();
+  document.getElementById('clockEl').textContent =
+    (n.getHours()%12||12) + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+setInterval(tickClock, 15000); tickClock();
+let batt = 75;
+setInterval(() => {
+  batt = Math.max(5, batt - 0.4);
+  const f = document.getElementById('batteryFill');
+  f.style.width = batt + '%';
+  f.style.background = batt < 20 ? '#e84' : '#8de88d';
+}, 60000);
+
+// ══════════════════════════════════════════════════════
+//  STATUS BAR
+// ══════════════════════════════════════════════════════
+let errTimer = null;
+function showErr(msg) {
+  statusTitleEl.textContent = msg;
+  statusBar.classList.add('err');
+  clearTimeout(errTimer);
+  errTimer = setTimeout(() => { statusBar.classList.remove('err'); syncStatusTitle(); }, 2800);
+}
+function syncStatusTitle() {
+  if (ST.curIdx >= 0) {
+    const s = ST.songs[ST.curIdx];
+    statusTitleEl.textContent = (ST.playing ? '\u25b6 ' : '') + s.title;
+  } else {
+    statusTitleEl.textContent = VIEW_TITLE[ST.curView] || 'iPod';
+  }
+}
+function showInfo(msg) { statusTitleEl.textContent = msg; statusBar.classList.remove('err'); }
+
+// ══════════════════════════════════════════════════════
+//  SCALE
+// ══════════════════════════════════════════════════════
+function applyScale() {
+  scaler.style.transform = 'scale(' + SCALES[ST.scaleStep] + ')';
+  document.getElementById('btnShrink').disabled = (ST.scaleStep === 0);
+  document.getElementById('btnGrow').disabled   = (ST.scaleStep === SCALES.length - 1);
+}
+document.getElementById('btnGrow').addEventListener('click', () => { if (ST.scaleStep < SCALES.length-1) { ST.scaleStep++; applyScale(); } });
+document.getElementById('btnShrink').addEventListener('click', () => { if (ST.scaleStep > 0) { ST.scaleStep--; applyScale(); } });
+applyScale();
+
+// ══════════════════════════════════════════════════════
+//  ART HELPERS
+// ══════════════════════════════════════════════════════
+function gradientForKey(key) {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (Math.imul(31, h) + key.charCodeAt(i)) | 0;
+  const hue1 = Math.abs(h) % 360, hue2 = (hue1 + 137) % 360;
+  return 'linear-gradient(135deg,hsl(' + hue1 + ',55%,28%),hsl(' + hue2 + ',60%,42%),hsl(' + hue1 + ',50%,22%))';
+}
+function albumKey(artist, album) {
+  return artist.toLowerCase().trim() + '::' + album.toLowerCase().trim();
+}
+function extractArtUrl(picData) {
+  if (!picData || !picData.data) return null;
+  try {
+    const bytes = new Uint8Array(picData.data);
+    return URL.createObjectURL(new Blob([bytes], { type: picData.format || 'image/jpeg' }));
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════════════════════
+//  INDEXEDDB — persist songs across refreshes
+// ══════════════════════════════════════════════════════
+const IDB_NAME = 'ipod_library', IDB_VER = 1, IDB_STORE = 'songs';
+let idb = null;
+
+function openIDB() {
+  return new Promise((res, rej) => {
+    if (idb) return res(idb);
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => { idb = e.target.result; res(idb); };
+    req.onerror = () => rej(req.error);
+  });
+}
+function idbAll() {
+  return openIDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  }));
+}
+function idbPut(record) {
+  return openIDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const req = tx.objectStore(IDB_STORE).put(record);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  }));
+}
+function idbClear() {
+  return openIDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const req = tx.objectStore(IDB_STORE).clear();
+    req.onsuccess = () => res(); req.onerror = () => rej(req.error);
+  }));
+}
+
+// Restore library from IndexedDB on page load
+async function restoreFromIDB() {
+  // Always start on main menu — never let Now Playing be the default view
+  const ensureMainMenu = () => {
+    if (ST.curView !== 'viewMainMenu') {
+      document.querySelectorAll('.view').forEach(v => {
+        v.className = v.id === 'viewMainMenu' ? 'view active' : 'view off-right';
+      });
+      ST.curView = 'viewMainMenu';
+      ST.navStack = [];
+    }
+    highlight('viewMainMenu', 0);
+    syncStatusTitle();
+  };
+
+  if (!window.indexedDB) {
+    showErr('Storage unavailable');
+    ensureMainMenu();
+    return;
+  }
+
+  try {
+    showInfo('Loading library...');
+    const records = await idbAll();
+    if (!records.length) { ensureMainMenu(); return; }
+
+    for (const rec of records) {
+      if (!rec.buffer) continue; // skip malformed records
+      const mime = rec.mime || 'audio/mpeg';
+      let blob, url;
+      try {
+        blob = new Blob([rec.buffer], { type: mime });
+        url  = URL.createObjectURL(blob);
+      } catch(blobErr) {
+        console.warn('Skipping corrupt IDB record:', blobErr);
+        continue;
+      }
+      // Restore art if stored
+      let artUrl = null;
+      if (rec.artBuffer && rec.artMime) {
+        try {
+          artUrl = URL.createObjectURL(new Blob([rec.artBuffer], { type: rec.artMime }));
+        } catch(artErr) { artUrl = null; }
+      }
+      const song = {
+        url, mime,
+        title:    rec.title    || 'Unknown Title',
+        artist:   rec.artist   || 'Unknown Artist',
+        album:    rec.album    || 'Unknown Album',
+        trackNum: rec.trackNum || 0,
+        artUrl,
+        duration: rec.duration || 0,
+        idbId:    rec.id,
+      };
+      ST.songs.push(song);
+      const key = albumKey(song.artist, song.album);
+      if (artUrl && !ST.artCache.has(key)) ST.artCache.set(key, artUrl);
+    }
+
+    rebuildLibrary();
+    rebuildLists();
+    ensureMainMenu();
+  } catch(e) {
+    console.warn('IDB restore failed:', e);
+    showErr('Storage unavailable');
+    ensureMainMenu();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  FILE LOADING + METADATA
+// ══════════════════════════════════════════════════════
+document.getElementById('addSongsBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('addFolderBtn').addEventListener('click', () => document.getElementById('folderInput').click());
+document.getElementById('folderInput').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files).filter(isAudioFile);
+  if (!files.length) { showErr('No audio files found'); e.target.value = ''; return; }
+  loadFiles(files);
+  e.target.value = '';
+});
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files).filter(isAudioFile);
+  if (!files.length) { showErr('No audio files found'); e.target.value = ''; return; }
+  loadFiles(files);
+  e.target.value = '';
+});
+
+function mimeForFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const MAP = {
+    mp3: 'audio/mpeg', flac: 'audio/flac',
+    m4a: 'audio/mp4', aac: 'audio/aac',
+    wav: 'audio/wav', ogg: 'audio/ogg',
+    opus: 'audio/ogg', wma: 'audio/x-ms-wma',
+  };
+  return MAP[ext] || file.type || 'audio/mpeg';
+}
+function isAudioFile(file) {
+  const n = file.name.toLowerCase();
+  return /\.(mp3|flac|m4a|aac|wav|ogg|opus|wma)$/.test(n);
+}
+function parseFallback(filename) {
+  const base = filename.replace(/\.[^.]+$/, '');
+  const m = base.match(/^(.+?)\s*[-\u2013]\s*(.+)$/);
+  if (m) return { artist: m[1].trim(), title: m[2].trim(), album: 'Unknown Album', trackNum: 0 };
+  return { artist: 'Unknown Artist', title: base, album: 'Unknown Album', trackNum: 0 };
+}
+function loadFiles(files) {
+  let pending = files.length, done = 0;
+  showInfo('Reading... (0/' + pending + ')');
+  files.forEach(file => {
+    const mime = mimeForFile(file);
+    const fb   = parseFallback(file.name);
+    // Read raw buffer for IDB storage
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const buffer = ev.target.result;
+      const blob   = new Blob([buffer], { type: mime });
+      const url    = URL.createObjectURL(blob);
+      window.jsmediatags.read(file, {
+        onSuccess(result) {
+          const tags    = result.tags;
+          const title   = tags.title  || fb.title;
+          const artist  = tags.artist || fb.artist;
+          const album   = tags.album  || fb.album;
+          const trackNum = parseTrackNum(tags.track);
+          const picture = tags.picture || null;
+          const key = albumKey(artist, album);
+          let artUrl = ST.artCache.get(key);
+          let artBuffer = null, artMime = null;
+          if (picture && picture.data) {
+            artMime = picture.format || 'image/jpeg';
+            artBuffer = new Uint8Array(picture.data).buffer;
+          }
+          if (artUrl === undefined) {
+            artUrl = artBuffer ? URL.createObjectURL(new Blob([artBuffer], { type: artMime })) : null;
+            ST.artCache.set(key, artUrl);
+          } else if (!artUrl && artBuffer) {
+            artUrl = URL.createObjectURL(new Blob([artBuffer], { type: artMime }));
+            ST.artCache.set(key, artUrl);
+          } else { artBuffer = null; artMime = null; } // don't store redundant art
+          const song = { url, mime, title, artist, album, trackNum, artUrl, duration: 0 };
+          ST.songs.push(song);
+          // Persist to IDB
+          idbPut({ buffer, mime, title, artist, album, trackNum, artBuffer, artMime, duration: 0 })
+            .then(id => { song.idbId = id; })
+            .catch(err => console.warn('IDB save failed:', err));
+          getAudioDuration(url, song, true);
+          done++;
+          if (done < pending) showInfo('Reading... (' + done + '/' + pending + ')');
+          else finishLoad();
+        },
+        onError() {
+          const song = { url, mime, title: fb.title, artist: fb.artist, album: fb.album, trackNum: 0, artUrl: null, duration: 0 };
+          ST.songs.push(song);
+          idbPut({ buffer, mime, title: fb.title, artist: fb.artist, album: fb.album, trackNum: 0, artBuffer: null, artMime: null, duration: 0 })
+            .then(id => { song.idbId = id; })
+            .catch(err => console.warn('IDB save failed:', err));
+          getAudioDuration(url, song, true);
+          done++;
+          if (done < pending) showInfo('Reading... (' + done + '/' + pending + ')');
+          else finishLoad();
+        }
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+function parseTrackNum(raw) {
+  if (!raw) return 0;
+  const n = parseInt(String(raw).split('/')[0], 10);
+  return isNaN(n) ? 0 : n;
+}
+function getAudioDuration(url, song, saveToIDB) {
+  const tmp = new Audio();
+  tmp.preload = 'metadata';
+  tmp.addEventListener('loadedmetadata', () => {
+    song.duration = tmp.duration;
+    if (saveToIDB && song.idbId) {
+      // Update duration in IDB record
+      openIDB().then(db => {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.get(song.idbId);
+        req.onsuccess = () => {
+          if (req.result) { req.result.duration = tmp.duration; store.put(req.result); }
+        };
+      }).catch(() => {});
+    }
+    rebuildLists();
+  });
+  tmp.src = url;
+}
+function finishLoad() { rebuildLibrary(); rebuildLists(); syncStatusTitle(); }
+
+// ══════════════════════════════════════════════════════
+//  LIBRARY
+// ══════════════════════════════════════════════════════
+function rebuildLibrary() {
+  ST.albums = new Map(); ST.artists = new Map();
+  for (const song of ST.songs) {
+    const key = albumKey(song.artist, song.album);
+    const artUrl = ST.artCache.get(key) || song.artUrl || null;
+    if (!ST.albums.has(key)) ST.albums.set(key, { name: song.album, artist: song.artist, artUrl, tracks: [] });
+    const alb = ST.albums.get(key);
+    if (!alb.artUrl && artUrl) alb.artUrl = artUrl;
+    alb.tracks.push(song);
+    const ak = song.artist.toLowerCase().trim();
+    if (!ST.artists.has(ak)) ST.artists.set(ak, { name: song.artist, albums: new Map() });
+    const ao = ST.artists.get(ak);
+    if (!ao.albums.has(key)) ao.albums.set(key, alb);
+  }
+  for (const alb of ST.albums.values()) {
+    alb.tracks.sort((a, b) => a.trackNum !== b.trackNum ? a.trackNum - b.trackNum : a.title.localeCompare(b.title));
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  LIST BUILDERS
+// ══════════════════════════════════════════════════════
+function fmt(s) {
+  if (!s || !isFinite(s) || s < 0) return '0:00';
+  return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+}
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function makeArtThumb(artUrl, gradient) {
+  const div = document.createElement('div');
+  div.className = 'mi-art';
+  if (artUrl) {
+    div.style.background = 'none';
+    const img = document.createElement('img');
+    img.src = artUrl; img.alt = '';
+    div.appendChild(img);
+  } else {
+    div.style.background = gradient;
+    const sp = document.createElement('span');
+    sp.className = 'mi-art-placeholder'; sp.textContent = '\u266a';
+    div.appendChild(sp);
+  }
+  return div;
+}
+
+function rebuildLists() {
+  buildSongsList(); buildAlbumsList(); buildArtistsList();
+  buildStatsViews();
+  const needsHi = ['viewSongs','viewArtists','viewAlbums','viewAlbumTracks','viewArtistAlbums',
+                   'viewStats','viewTopSongs','viewTopArtists','viewTopAlbums'];
+  if (needsHi.includes(ST.curView)) highlight(ST.curView, ST.selIdx);
+}
+
+function buildSongsList() {
+  const ul = document.getElementById('listSongs');
+  ul.innerHTML = '';
+  const sorted = [...ST.songs].sort((a,b) => a.title.localeCompare(b.title));
+  if (!sorted.length) {
+    ul.innerHTML = '<li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center;line-height:1.6">Add MP3/FLAC<br>using button above</li>';
+    return;
+  }
+  sorted.forEach(song => {
+    const idx = ST.songs.indexOf(song);
+    const li = document.createElement('li');
+    li.className = 'menu-item'; li.dataset.action = 'play:' + idx;
+    const key = albumKey(song.artist, song.album);
+    li.appendChild(makeArtThumb(song.artUrl, gradientForKey(key)));
+    const lbl = document.createElement('span'); lbl.className = 'mi-label';
+    lbl.innerHTML = '<span class="mi-title">' + esc(song.title) + '</span><span class="mi-sub">' + esc(song.artist) + '</span>';
+    li.appendChild(lbl);
+    const dur = document.createElement('span');
+    dur.style.cssText = 'font-size:7px;color:#5a8099;flex-shrink:0';
+    dur.textContent = fmt(song.duration);
+    li.appendChild(dur);
+    // Delete button
+    const delBtn = document.createElement('span');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = '\u2715';
+    delBtn.title = 'Remove';
+    delBtn.addEventListener('click', e => { e.stopPropagation(); promptDeleteSong(idx); });
+    delBtn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); promptDeleteSong(idx); }, { passive:false });
+    li.appendChild(delBtn);
+    ul.appendChild(li);
+  });
+}
+function buildAlbumsList() {
+  const ul = document.getElementById('listAlbums');
+  ul.innerHTML = '';
+  const sorted = [...ST.albums.entries()].sort((a,b) => a[1].name.localeCompare(b[1].name));
+  if (!sorted.length) { ul.innerHTML = '<li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center">No albums</li>'; return; }
+  sorted.forEach(([key, alb]) => {
+    const li = document.createElement('li');
+    li.className = 'menu-item'; li.dataset.action = 'album:' + key;
+    li.appendChild(makeArtThumb(alb.artUrl, gradientForKey(key)));
+    const lbl = document.createElement('span'); lbl.className = 'mi-label';
+    lbl.innerHTML = '<span class="mi-title">' + esc(alb.name) + '</span><span class="mi-sub">' + esc(alb.artist) + '</span>';
+    li.appendChild(lbl);
+    const arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '\u25b6';
+    li.appendChild(arr);
+    // Delete button on album rows
+    const delBtn = document.createElement('span');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = '\u2715';
+    delBtn.title = 'Remove album';
+    delBtn.addEventListener('click', e => { e.stopPropagation(); promptDeleteAlbum(key); });
+    delBtn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); promptDeleteAlbum(key); }, { passive:false });
+    li.appendChild(delBtn);
+    ul.appendChild(li);
+  });
+}
+function buildArtistsList() {
+  const ul = document.getElementById('listArtists');
+  ul.innerHTML = '';
+  const sorted = [...ST.artists.values()].sort((a,b) => a.name.localeCompare(b.name));
+  if (!sorted.length) { ul.innerHTML = '<li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center">No artists</li>'; return; }
+  sorted.forEach(ao => {
+    const li = document.createElement('li');
+    li.className = 'menu-item'; li.dataset.action = 'artist:' + ao.name;
+    const lbl = document.createElement('span'); lbl.className = 'mi-label';
+    lbl.innerHTML = '<span class="mi-title">' + esc(ao.name) + '</span><span class="mi-sub">' + ao.albums.size + ' album' + (ao.albums.size !== 1 ? 's' : '') + '</span>';
+    li.appendChild(lbl);
+    const arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '\u25b6';
+    li.appendChild(arr);
+    ul.appendChild(li);
+  });
+}
+function openAlbumTracks(key) {
+  const alb = ST.albums.get(key);
+  if (!alb) return;
+  document.getElementById('albumTracksHeader').textContent = alb.name;
+  const ul = document.getElementById('listAlbumTracks');
+  ul.innerHTML = '';
+  alb.tracks.forEach(song => {
+    const idx = ST.songs.indexOf(song);
+    const li = document.createElement('li');
+    li.className = 'menu-item'; li.dataset.action = 'play:' + idx;
+    const numStr = song.trackNum > 0 ? String(song.trackNum).padStart(2,' ') + ' ' : '';
+    const lbl = document.createElement('span'); lbl.className = 'mi-label';
+    lbl.innerHTML = '<span class="mi-title">' + esc(numStr + song.title) + '</span>';
+    li.appendChild(lbl);
+    const dur = document.createElement('span');
+    dur.style.cssText = 'font-size:7px;color:#5a8099;flex-shrink:0';
+    dur.textContent = fmt(song.duration);
+    li.appendChild(dur);
+    // Delete button
+    const delBtn = document.createElement('span');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = '\u2715';
+    delBtn.title = 'Remove';
+    delBtn.addEventListener('click', e => { e.stopPropagation(); promptDeleteSong(ST.songs.indexOf(song)); });
+    delBtn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); promptDeleteSong(ST.songs.indexOf(song)); }, { passive:false });
+    li.appendChild(delBtn);
+    ul.appendChild(li);
+  });
+  goTo('viewAlbumTracks');
+}
+function openArtistAlbums(artistName) {
+  const ak = artistName.toLowerCase().trim();
+  const ao = ST.artists.get(ak);
+  if (!ao) return;
+  document.getElementById('artistAlbumsHeader').textContent = artistName;
+  const ul = document.getElementById('listArtistAlbums');
+  ul.innerHTML = '';
+  [...ao.albums.entries()].sort((a,b) => a[1].name.localeCompare(b[1].name)).forEach(([key, alb]) => {
+    const li = document.createElement('li');
+    li.className = 'menu-item'; li.dataset.action = 'album:' + key;
+    li.appendChild(makeArtThumb(alb.artUrl, gradientForKey(key)));
+    const lbl = document.createElement('span'); lbl.className = 'mi-label';
+    lbl.innerHTML = '<span class="mi-title">' + esc(alb.name) + '</span><span class="mi-sub">' + alb.tracks.length + ' track' + (alb.tracks.length !== 1 ? 's' : '') + '</span>';
+    li.appendChild(lbl);
+    const arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '\u25b6';
+    li.appendChild(arr);
+    ul.appendChild(li);
+  });
+  goTo('viewArtistAlbums');
+}
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function goTo(targetId) {
+  // Guard: never navigate to Now Playing unless a song is loaded
+  if (targetId === 'viewNowPlaying' && ST.curIdx < 0) {
+    showErr('No song playing');
+    return;
+  }
+  if (targetId === ST.curView) return;
+  const fromEl = document.getElementById(ST.curView);
+  const toEl   = document.getElementById(targetId);
+  if (!toEl) return;
+  ST.navStack.push({ viewId: ST.curView, selIdx: ST.selIdx });
+  ST.selIdx = 0;
+  fromEl.className = 'view off-left';
+  toEl.className   = 'view active';
+  ST.curView = targetId;
+  // Refresh stats screens when navigating into them
+  if (['viewStats','viewStatsOverview','viewTopSongs','viewTopArtists','viewTopAlbums'].includes(targetId)) {
+    buildStatsViews();
+  }
+  if (!ST.playing) syncStatusTitle();
+  setTimeout(() => {
+    // For delete confirm screens, start highlight on the action item (index 1), not info text (index 0)
+    const deleteViews = ['viewDeleteSong', 'viewDeleteAlbum'];
+    highlight(targetId, deleteViews.includes(targetId) ? 1 : 0);
+  }, 30);
+}
+function goBack() {
+  if (!ST.navStack.length) return;
+  clickSound(true); flashWheelFn();
+  const { viewId: prevId, selIdx: prevSel } = ST.navStack.pop();
+  const fromEl = document.getElementById(ST.curView);
+  const toEl   = document.getElementById(prevId);
+  if (!toEl) return;
+  fromEl.className = 'view off-right';
+  toEl.className   = 'view active';
+  ST.curView = prevId; ST.selIdx = prevSel;
+  if (!ST.playing) syncStatusTitle();
+  setTimeout(() => highlight(prevId, prevSel), 30);
+}
+function highlight(viewId, idx) {
+  const items = listItems(viewId);
+  if (!items.length) return;
+  idx = Math.max(0, Math.min(items.length - 1, idx));
+  ST.selIdx = idx;
+  items.forEach((el, i) => el.classList.toggle('selected', i === idx));
+  items[idx]?.scrollIntoView({ block: 'nearest' });
+}
+function scrollList(delta) {
+  if (ST.curView === 'viewNowPlaying' || ST.curView === 'viewStatsOverview') return;
+  const items = listItems(ST.curView);
+  if (!items.length) return;
+  const next = Math.max(0, Math.min(items.length - 1, ST.selIdx + delta));
+  if (next !== ST.selIdx) { highlight(ST.curView, next); clickSound(false); }
+}
+function selectItem() {
+  if (ST.curView === 'viewNowPlaying') { togglePlay(); return; }
+  if (ST.curView === 'viewStatsOverview') return;
+  const items  = listItems(ST.curView);
+  const item   = items[ST.selIdx];
+  if (!item) return;
+  const action = item.dataset.action || '';
+  clickSound(true);
+  if (action.startsWith('nav:'))     goTo(action.slice(4));
+  else if (action.startsWith('play:'))   { playSong(parseInt(action.slice(5), 10)); goTo('viewNowPlaying'); }
+  else if (action.startsWith('album:'))  openAlbumTracks(action.slice(6));
+  else if (action.startsWith('artist:')) openArtistAlbums(action.slice(7));
+  else if (action.startsWith('toggle:')) doToggle(action.slice(7));
+  else if (action === 'action:clearLibrary') clearLibrary();
+  else if (action === 'action:confirmDeleteSong')  executePendingDeleteSong();
+  else if (action === 'action:confirmDeleteAlbum') executePendingDeleteAlbum();
+  else if (action === 'nav:back') goBack();
+}
+function doToggle(key) {
+  if (key === 'shuffle') {
+    ST.shuffle = !ST.shuffle;
+    document.getElementById('shuffleVal').textContent = ST.shuffle ? 'On' : 'Off';
+    document.getElementById('shuffleIcon').classList.toggle('on', ST.shuffle);
+  } else if (key === 'repeat') {
+    ST.repeatMode = (ST.repeatMode + 1) % 3;
+    document.getElementById('repeatVal').textContent = ['Off','All','One'][ST.repeatMode];
+    document.getElementById('repeatIcon').classList.toggle('on', ST.repeatMode > 0);
+  }
+}
+function clearLibrary() {
+  if (!ST.songs.length) { showErr('Library empty'); return; }
+  audio.pause();
+  ST.songs = []; ST.albums = new Map(); ST.artists = new Map();
+  ST.artCache = new Map(); ST.curIdx = -1; ST.playing = false;
+  idbClear().catch(() => {});
+  rebuildLists(); updateNP(); syncStatusTitle();
+  showInfo('Library cleared');
+}
+
+// ══════════════════════════════════════════════════════
+//  DELETE SONG / ALBUM
+// ══════════════════════════════════════════════════════
+function promptDeleteSong(idx) {
+  if (idx < 0 || idx >= ST.songs.length) return;
+  ST.pendingDeleteSongIdx = idx;
+  const song = ST.songs[idx];
+  const info = document.getElementById('deleteSongInfo');
+  info.textContent = '"' + song.title + '"';
+  goTo('viewDeleteSong');
+}
+
+function executePendingDeleteSong() {
+  const idx = ST.pendingDeleteSongIdx;
+  if (idx < 0 || idx >= ST.songs.length) { goBack(); return; }
+  const song = ST.songs[idx];
+  const wasPlaying = ST.curIdx === idx;
+
+  // Stop playback if this song is playing
+  if (wasPlaying) {
+    audio.pause(); audio.src = '';
+    ST.curIdx = -1; ST.playing = false;
+  } else if (ST.curIdx > idx) {
+    ST.curIdx--;
+  }
+
+  // Remove from IDB
+  if (song.idbId) {
+    openIDB().then(db => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(song.idbId);
+    }).catch(() => {});
+  }
+
+  ST.songs.splice(idx, 1);
+  ST.pendingDeleteSongIdx = -1;
+  rebuildLibrary();
+  rebuildLists();
+
+  // Pop the delete confirm screen off the stack, then go back one more level
+  // to the list that contained this song
+  if (ST.navStack.length > 0) {
+    const prev = ST.navStack.pop(); // pop the delete confirm entry
+    // Also pop the song/album tracks screen if we came from there
+    const listViews = ['viewSongs','viewAlbumTracks','viewArtistAlbums'];
+    const landingView = prev.viewId;
+    const fromEl = document.getElementById(ST.curView);
+    const toEl   = document.getElementById(landingView);
+    if (toEl) {
+      fromEl.className = 'view off-right';
+      toEl.className   = 'view active';
+      ST.curView = landingView;
+      setTimeout(() => highlight(landingView, Math.max(0, prev.selIdx - 1)), 30);
+    }
+  }
+
+  if (wasPlaying) {
+    updateNP();
+    // If we ended up on now playing, kick back to main menu
+    if (ST.curView === 'viewNowPlaying') {
+      const fromEl = document.getElementById(ST.curView);
+      const toEl   = document.getElementById('viewMainMenu');
+      ST.navStack = [];
+      fromEl.className = 'view off-right';
+      toEl.className   = 'view active';
+      ST.curView = 'viewMainMenu';
+      setTimeout(() => highlight('viewMainMenu', 0), 30);
+    }
+  }
+  syncStatusTitle();
+}
+
+function promptDeleteAlbum(key) {
+  const alb = ST.albums.get(key);
+  if (!alb) return;
+  ST.pendingDeleteAlbumKey = key;
+  const info = document.getElementById('deleteAlbumInfo');
+  info.textContent = '"' + alb.name + '" (' + alb.tracks.length + ' track' + (alb.tracks.length !== 1 ? 's' : '') + ')';
+  goTo('viewDeleteAlbum');
+}
+
+function executePendingDeleteAlbum() {
+  const key = ST.pendingDeleteAlbumKey;
+  const alb = ST.albums.get(key);
+  if (!alb) { goBack(); return; }
+
+  const toRemove = new Set(alb.tracks.map(s => ST.songs.indexOf(s)));
+  const idbIds   = alb.tracks.map(s => s.idbId).filter(Boolean);
+  const wasPlayingDeleted = ST.curIdx >= 0 && toRemove.has(ST.curIdx);
+
+  if (wasPlayingDeleted) {
+    audio.pause(); audio.src = '';
+    ST.curIdx = -1; ST.playing = false;
+  }
+
+  if (idbIds.length) {
+    openIDB().then(db => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      const store = tx.objectStore(IDB_STORE);
+      idbIds.forEach(id => store.delete(id));
+    }).catch(() => {});
+  }
+
+  const removedBefore = [...toRemove].filter(i => i < ST.curIdx).length;
+  ST.songs = ST.songs.filter((_, i) => !toRemove.has(i));
+  if (ST.curIdx >= 0) ST.curIdx = Math.max(-1, ST.curIdx - removedBefore);
+  if (ST.curIdx >= ST.songs.length) { ST.curIdx = -1; ST.playing = false; }
+
+  ST.pendingDeleteAlbumKey = null;
+  rebuildLibrary();
+  rebuildLists();
+
+  // Navigate back past the delete confirm AND the album track list
+  // Pop delete confirm frame
+  if (ST.navStack.length > 0) ST.navStack.pop();
+  // Pop album track list frame if present
+  if (ST.navStack.length > 0 && ['viewAlbumTracks','viewArtistAlbums'].includes(ST.navStack[ST.navStack.length-1].viewId)) {
+    ST.navStack.pop();
+  }
+  // Now land on the albums list or artist view
+  const landEntry = ST.navStack.length > 0 ? ST.navStack.pop() : { viewId: 'viewAlbums', selIdx: 0 };
+  const fromEl = document.getElementById(ST.curView);
+  const toEl   = document.getElementById(landEntry.viewId) || document.getElementById('viewAlbums');
+  fromEl.className = 'view off-right';
+  toEl.className   = 'view active';
+  ST.curView = toEl.id;
+  setTimeout(() => highlight(ST.curView, Math.max(0, landEntry.selIdx - 1)), 30);
+
+  if (wasPlayingDeleted) {
+    updateNP();
+    if (ST.curView === 'viewNowPlaying') {
+      const fe = document.getElementById(ST.curView);
+      const te = document.getElementById('viewMainMenu');
+      ST.navStack = [];
+      fe.className = 'view off-right';
+      te.className = 'view active';
+      ST.curView = 'viewMainMenu';
+      setTimeout(() => highlight('viewMainMenu', 0), 30);
+    }
+  }
+  syncStatusTitle();
+}
+
+// ══════════════════════════════════════════════════════
+//  PLAYBACK
+// ══════════════════════════════════════════════════════
+function playSong(idx) {
+  if (idx < 0 || idx >= ST.songs.length) return;
+  ST.curIdx = idx;
+  const song = ST.songs[idx];
+  const mime = song.mime || 'audio/mpeg';
+  if (mime === 'audio/flac' && audio.canPlayType('audio/flac') === '') {
+    showErr('FLAC unsupported \u2014 use Chrome/Firefox'); ST.playing = false; updateNP(); return;
+  }
+  audio.oncanplay = null; audio.onerror = null;
+  audio.pause();
+  while (audio.firstChild) audio.removeChild(audio.firstChild);
+  audio.src = song.url;
+  audio.load();
+  audio.oncanplay = () => {
+    audio.oncanplay = null;
+    const p = audio.play();
+    if (p) p.catch(err => { console.warn(err); showErr('Playback error'); });
+  };
+  audio.onerror = () => {
+    audio.onerror = null;
+    const code = audio.error ? audio.error.code : 0;
+    const msg = code === 4 ? (mime === 'audio/flac' ? 'FLAC not supported' : 'Format unsupported')
+              : code === 3 ? 'Decode error' : code === 2 ? 'Network error' : 'File error';
+    showErr(msg); ST.playing = false; updateNP();
+  };
+}
+function togglePlay() {
+  if (!ST.songs.length) { showErr('No songs loaded'); return; }
+  if (ST.curIdx === -1)  { playSong(0); return; }
+  if (ST.playing) audio.pause();
+  else audio.play().catch(e => { console.warn(e); showErr('Playback error'); });
+}
+function nextTrack() {
+  if (!ST.songs.length) return;
+  const n = ST.shuffle ? Math.floor(Math.random()*ST.songs.length) : (ST.curIdx+1)%ST.songs.length;
+  playSong(n);
+}
+function prevTrack() {
+  if (!ST.songs.length) return;
+  if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+  const n = ST.shuffle ? Math.floor(Math.random()*ST.songs.length) : (ST.curIdx-1+ST.songs.length)%ST.songs.length;
+  playSong(n);
+}
+
+// Track play count on first meaningful play (after 5s)
+let _playCountedIdx = -1;
+audio.addEventListener('timeupdate', () => {
+  if (ST.playing && audio.currentTime >= 5 && _playCountedIdx !== ST.curIdx) {
+    _playCountedIdx = ST.curIdx;
+    if (ST.curIdx >= 0) recordPlay(ST.songs[ST.curIdx]);
+  }
+  const el = audio.currentTime, tot = audio.duration || 0;
+  progressFill.style.width = (tot > 0 ? (el/tot)*100 : 0) + '%';
+  document.getElementById('timeEl').textContent  = fmt(el);
+  document.getElementById('timeRem').textContent = '-' + fmt(tot - el);
+});
+
+audio.addEventListener('play',  () => { ST.playing = true;  updateNP(); syncStatusTitle(); });
+audio.addEventListener('pause', () => { ST.playing = false; updateNP(); syncStatusTitle(); });
+audio.addEventListener('ended', () => {
+  if (ST.repeatMode === 2) { audio.currentTime = 0; audio.play(); }
+  else if (ST.repeatMode === 1 || ST.curIdx < ST.songs.length-1) nextTrack();
+  else { ST.playing = false; updateNP(); }
+});
+progressTrack.addEventListener('click', e => {
+  if (!audio.duration) return;
+  const r = progressTrack.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+function updateNP() {
+  const s = ST.curIdx >= 0 ? ST.songs[ST.curIdx] : null;
+  document.getElementById('npTitle').textContent  = s ? s.title  : 'No Track';
+  document.getElementById('npArtist').textContent = s ? s.artist : '\u2014';
+  document.getElementById('playIcon').textContent = ST.playing ? '\u23f8' : '\u25b6';
+  if (s && s.artUrl) {
+    npArtImg.src = s.artUrl; npArtImg.style.display = 'block';
+    npArtPlaceholder.style.display = 'none';
+  } else {
+    npArtImg.style.display = 'none'; npArtPlaceholder.style.display = 'flex';
+    if (s) { npArtPlaceholder.style.background = gradientForKey(albumKey(s.artist,s.album)); npArtPlaceholder.textContent = '\u266a'; }
+    else   { npArtPlaceholder.style.background = 'linear-gradient(135deg,#1a4f7a,#4a9fd4,#1a4f7a)'; npArtPlaceholder.textContent = '\u1f3b5'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  WHEEL — buttons + drag (mouse AND touch unified)
+// ══════════════════════════════════════════════════════
+function flashWheelFn() {
+  flashRing.classList.add('flash');
+  setTimeout(() => flashRing.classList.remove('flash'), 110);
+}
+
+function wheelBtnAction(id) {
+  clickSound(true); flashWheelFn();
+  if (id === 'wzTop')   { goBack(); }
+  else if (id === 'wzBot')   { togglePlay(); }
+  else if (id === 'wzLeft')  { prevTrack(); }
+  else if (id === 'wzRight') { nextTrack(); }
+}
+
+// Helper: was the touch/click a tap (not a drag)?
+function bindWheelZone(el) {
+  let tapping = false, tapX = 0, tapY = 0;
+  // mouse
+  el.addEventListener('click', e => { e.stopPropagation(); wheelBtnAction(el.id); });
+  // touch — fire only if pointer barely moved (tap, not drag)
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    tapping = true;
+    tapX = e.touches[0].clientX; tapY = e.touches[0].clientY;
+  }, { passive: false });
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (!tapping) return;
+    const dx = e.changedTouches[0].clientX - tapX;
+    const dy = e.changedTouches[0].clientY - tapY;
+    if (Math.hypot(dx, dy) < 10) wheelBtnAction(el.id);
+    tapping = false;
+  }, { passive: false });
+  el.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - tapX;
+    const dy = e.touches[0].clientY - tapY;
+    if (Math.hypot(dx, dy) > 8) tapping = false;
+  }, { passive: true });
+}
+
+['wzTop','wzBot','wzLeft','wzRight'].forEach(id => bindWheelZone(document.getElementById(id)));
+
+// Center button
+centerBtn.addEventListener('click', e => {
+  e.stopPropagation(); clickSound(true); flashWheelFn();
+  centerBtn.classList.add('pressed');
+  setTimeout(() => centerBtn.classList.remove('pressed'), 110);
+  selectItem();
+});
+centerBtn.addEventListener('touchstart', e => {
+  e.preventDefault(); e.stopPropagation();
+  clickSound(true); flashWheelFn();
+  centerBtn.classList.add('pressed');
+  setTimeout(() => centerBtn.classList.remove('pressed'), 110);
+  selectItem();
+}, { passive: false });
+
+// ── ring drag (scroll / scrub) ──
+const drag = { on: false, lastAngle: 0, acc: 0 };
+function wCenter() { const r = wheel.getBoundingClientRect(); return { x: r.left+r.width/2, y: r.top+r.height/2, rad: r.width/2 }; }
+function angleTo(cx, cy, x, y) { return Math.atan2(y-cy, x-cx) * (180/Math.PI); }
+function onRing(x, y) {
+  const c = wCenter(), d = Math.hypot(x-c.x, y-c.y);
+  return d > c.rad*0.44 && d < c.rad*0.97;
+}
+function dragStart(x, y) {
+  if (!onRing(x, y)) return false;
+  const c = wCenter();
+  drag.on = true; drag.lastAngle = angleTo(c.x,c.y,x,y); drag.acc = 0;
+  return true;
+}
+function dragMove(x, y) {
+  if (!drag.on) return;
+  const c = wCenter();
+  const angle = angleTo(c.x,c.y,x,y);
+  let delta = angle - drag.lastAngle;
+  if (delta >  180) delta -= 360;
+  if (delta < -180) delta += 360;
+  drag.acc += delta; drag.lastAngle = angle;
+  const THRESH = 18;
+  if (Math.abs(drag.acc) >= THRESH) {
+    const steps = Math.floor(Math.abs(drag.acc)/THRESH);
+    const dir   = drag.acc > 0 ? 1 : -1;
+    if (ST.curView === 'viewNowPlaying' && audio.duration) {
+      audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + dir*steps*2));
+    } else { scrollList(dir*steps); }
+    drag.acc = drag.acc % THRESH;
+  }
+}
+function dragEnd() { drag.on = false; }
+
+// Mouse
+wheel.addEventListener('mousedown', e => {
+  if (e.target === centerBtn) return;
+  if (dragStart(e.clientX, e.clientY)) e.preventDefault();
+});
+window.addEventListener('mousemove', e => dragMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', dragEnd);
+
+// Touch — the entire wheel handles ring drags
+wheel.addEventListener('touchstart', e => {
+  if (e.target === centerBtn) return;
+  const t = e.touches[0];
+  // onRing() is the sole arbiter — zone divs don't block drags
+  if (dragStart(t.clientX, t.clientY)) e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchmove', e => {
+  if (!drag.on) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  dragMove(t.clientX, t.clientY);
+}, { passive: false });
+
+window.addEventListener('touchend', dragEnd, { passive: true });
+
+// Prevent pinch-zoom / page scroll while on the wheel
+wheel.addEventListener('touchmove', e => { if (drag.on) e.preventDefault(); }, { passive: false });
+
+// ── keyboard ──
+document.addEventListener('keydown', e => {
+  switch(e.key) {
+    case 'ArrowUp':    e.preventDefault(); scrollList(-1); break;
+    case 'ArrowDown':  e.preventDefault(); scrollList(1);  break;
+    case 'ArrowLeft':  prevTrack(); break;
+    case 'ArrowRight': nextTrack(); break;
+    case 'Enter': case ' ': e.preventDefault(); selectItem(); break;
+    case 'Escape': case 'Backspace': goBack(); break;
+  }
+});
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+// Hard-reset all views to off-right except main menu to prevent any bleed-through
+document.querySelectorAll('.view').forEach(v => {
+  v.className = v.id === 'viewMainMenu' ? 'view active' : 'view off-right';
+});
+ST.curView = 'viewMainMenu';
+ST.navStack = [];
+highlight('viewMainMenu', 0);
+updateNP();
+// Don't call rebuildLists here — restoreFromIDB calls it after loading
+restoreFromIDB();
+</script>
+</body>
+</html>
