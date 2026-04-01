@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -249,180 +250,196 @@
   }
   .menu-item.selected .del-btn { color:#ffaaaa; border-color:rgba(255,170,170,0.4); opacity:1; }
 
-  /* ── color theme variables (overridden by JS) ── */
-  :root {
-    --ipod-body-top: #f2f2f2;
-    --ipod-body-mid: #e0e0e0;
-    --ipod-body-bottom: #d0d0d0;
-  }
+/* ── color theme variables (overridden by JS) ── */
+:root {
+–ipod-body-top: #f2f2f2;
+–ipod-body-mid: #e0e0e0;
+–ipod-body-bottom: #d0d0d0;
+}
 
-  /* ── color swatch in menu ── */
-  .color-swatch {
-    width:12px; height:12px; border-radius:2px; flex-shrink:0;
-    border:1px solid rgba(0,0,0,.15);
-  }
+/* ── color swatch in menu ── */
+.color-swatch {
+width:12px; height:12px; border-radius:2px; flex-shrink:0;
+border:1px solid rgba(0,0,0,.15);
+}
 
-  /* ── mobile-only menu items ── */
-  .mobile-only { display:none; }
+/* ── mobile-only menu items ── */
+.mobile-only { display:none; }
 
-  /* ══════════════════════════════════════════════════
-     MOBILE FULLSCREEN — phone IS the iPed
-     All sizing via vw/dvh/%, no JS transform scaling.
-  ══════════════════════════════════════════════════ */
-  @media (max-width: 768px) {
+/* ══════════════════════════════════════════════════
+MOBILE FULLSCREEN — phone IS the iPed
+All sizing via vw/dvh/%, no JS transform scaling.
+══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
 
-    /* hide desktop controls, show mobile-only items */
-    .top-controls { display:none !important; }
-    .mobile-only  { display:flex !important; }
+```
+/* hide desktop controls, show mobile-only items */
+.top-controls { display:none !important; }
+.mobile-only  { display:flex !important; }
 
-    /* body background matches iPed body so zero gap */
-    html, body {
-      width:100vw; height:100dvh;
-      overflow:hidden; padding:0; margin:0;
-      background:linear-gradient(160deg, var(--ipod-body-top) 0%, var(--ipod-body-mid) 40%, var(--ipod-body-bottom) 100%);
-      touch-action:none;
-    }
-    body::before, body::after { display:none; }
+/* body background matches iPed body so zero gap */
+html, body {
+  width:100vw; height:100dvh;
+  overflow:hidden; padding:0; margin:0;
+  background:linear-gradient(160deg, var(--ipod-body-top) 0%, var(--ipod-body-mid) 40%, var(--ipod-body-bottom) 100%);
+  touch-action:none;
+}
+body::before, body::after { display:none; }
 
-    /* scaler: covers the entire viewport, no transform */
-    .ipod-scaler {
-      position:fixed !important;
-      inset:0 !important;
-      width:100vw !important;
-      height:100dvh !important;
-      transform:none !important;
-      transition:none !important;
-      z-index:1 !important;
-    }
+/* scaler: covers the entire viewport, no transform */
+.ipod-scaler {
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  transform:none !important;
+  transition:none !important;
+  z-index:1 !important;
+}
 
-    /* iPed body fills viewport — phone corners replace border-radius */
-    .ipod-scaler .ipod {
-      width:100vw !important;
-      height:100dvh !important;
-      border-radius:0 !important;
-      box-shadow:none !important;
-      padding:
-        max(env(safe-area-inset-top,0px), 3vw)
-        4vw
-        max(env(safe-area-inset-bottom,0px), 3vw)
-        4vw !important;
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:stretch !important;
-    }
-    /* keep gloss + texture pseudo-elements so it has depth */
-    .ipod-scaler .ipod::before { border-radius:0 !important; }
-    .ipod-scaler .ipod::after  { border-radius:0 0 60% 60% !important; }
+/* iPed body fills viewport — phone corners replace border-radius */
+.ipod-scaler .ipod {
+  width:100vw !important;
+  height:100dvh !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  padding:
+    max(env(safe-area-inset-top,0px), 3vw)
+    4vw
+    max(env(safe-area-inset-bottom,0px), 3vw)
+    4vw !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+}
+/* keep gloss + texture pseudo-elements so it has depth */
+.ipod-scaler .ipod::before { border-radius:0 !important; }
+.ipod-scaler .ipod::after  { border-radius:0 0 60% 60% !important; }
 
-    /* screen bezel */
-    .ipod-scaler .screen-bezel {
-      flex:0 0 auto;
-      border-radius:2vw !important;
-      padding:1vw !important;
-      margin-bottom:2.5vw !important;
-    }
+/* screen bezel */
+.ipod-scaler .screen-bezel {
+  flex:0 0 auto;
+  border-radius:2vw !important;
+  padding:1vw !important;
+  margin-bottom:2.5vw !important;
+}
 
-    /* screen: ~42% of viewport height */
-    .ipod-scaler .screen {
-      height:42dvh !important;
-      border-radius:1.5vw !important;
-    }
+/* screen: ~42% of viewport height */
+.ipod-scaler .screen {
+  height:42dvh !important;
+  border-radius:1.5vw !important;
+}
 
-    /* status bar */
-    .ipod-scaler .status-bar {
-      height:6vw !important;
-      font-size:2.5vw !important;
-      padding:0 2vw !important;
-    }
-    .ipod-scaler .battery-body {
-      width:4vw !important;
-      height:2vw !important;
-    }
-    .ipod-scaler .battery-body::after {
-      right:-0.7vw !important; width:0.5vw !important; height:1.1vw !important;
-    }
+/* status bar */
+.ipod-scaler .status-bar {
+  height:6vw !important;
+  font-size:2.5vw !important;
+  padding:0 2vw !important;
+}
+.ipod-scaler .battery-body {
+  width:4vw !important;
+  height:2vw !important;
+}
+.ipod-scaler .battery-body::after {
+  right:-0.7vw !important; width:0.5vw !important; height:1.1vw !important;
+}
 
-    /* screen-content fits below status bar */
-    .ipod-scaler .screen-content {
-      height:calc(42dvh - 6vw) !important;
-    }
+/* screen-content fits below status bar */
+.ipod-scaler .screen-content {
+  height:calc(42dvh - 6vw) !important;
+}
 
-    /* menu text readable at phone size */
-    .ipod-scaler .menu-header {
-      font-size:3vw !important;
-      padding:1vw 2vw !important;
-    }
-    .ipod-scaler .menu-list {
-      max-height:calc(42dvh - 6vw - 5vw) !important;
-    }
-    .ipod-scaler .menu-item {
-      font-size:3.5vw !important;
-      min-height:8vw !important;
-      padding:1vw 2vw !important;
-    }
-    .ipod-scaler .mi-sub     { font-size:2.5vw !important; }
-    .ipod-scaler .arr        { font-size:2.5vw !important; }
-    .ipod-scaler .mi-art     { width:5vw !important; height:5vw !important; }
-    .ipod-scaler .stat-rank  { font-size:2.8vw !important; }
-    .ipod-scaler .stat-count { font-size:2.5vw !important; }
-    .ipod-scaler .stat-row        { font-size:3vw !important; padding:1.5vw 0 !important; }
-    .ipod-scaler .stat-row-label  { font-size:2.5vw !important; }
-    .ipod-scaler .stat-row-value  { font-size:3vw !important; max-width:55vw !important; }
+/* menu text readable at phone size */
+.ipod-scaler .menu-header {
+  font-size:3vw !important;
+  padding:1vw 2vw !important;
+}
+.ipod-scaler .menu-list {
+  max-height:calc(42dvh - 6vw - 5vw) !important;
+}
+.ipod-scaler .menu-item {
+  font-size:3.5vw !important;
+  min-height:8vw !important;
+  padding:1vw 2vw !important;
+}
+.ipod-scaler .mi-sub     { font-size:2.5vw !important; }
+.ipod-scaler .arr        { font-size:2.5vw !important; }
+.ipod-scaler .mi-art     { width:5vw !important; height:5vw !important; }
+.ipod-scaler .stat-rank  { font-size:2.8vw !important; }
+.ipod-scaler .stat-count { font-size:2.5vw !important; }
+.ipod-scaler .stat-row        { font-size:3vw !important; padding:1.5vw 0 !important; }
+.ipod-scaler .stat-row-label  { font-size:2.5vw !important; }
+.ipod-scaler .stat-row-value  { font-size:3vw !important; max-width:55vw !important; }
 
-    /* now playing */
-    .ipod-scaler .album-art {
-      width:14vw !important; height:14vw !important;
-      margin:1.5vw auto 1vw !important;
-    }
-    .ipod-scaler .album-art-placeholder { font-size:8vw !important; }
-    .ipod-scaler .track-title  { font-size:3.5vw !important; max-width:90vw !important; }
-    .ipod-scaler .track-artist { font-size:3vw !important;   max-width:90vw !important; }
-    .ipod-scaler .progress-section { padding:2vw 3vw 1vw !important; }
-    .ipod-scaler .progress-bar-track { height:1vw !important; margin-bottom:1vw !important; }
-    .ipod-scaler .progress-bar-fill::after {
-      width:2.5vw !important; height:2.5vw !important;
-      right:-1.2vw !important; top:-0.8vw !important;
-    }
-    .ipod-scaler .time-display { font-size:2.5vw !important; }
-    .ipod-scaler .play-icon    { font-size:5vw !important; }
-    .ipod-scaler .pb-icon      { font-size:3vw !important; }
-    .ipod-scaler .play-state-row { gap:4vw !important; }
+/* ── now playing: centred vertically and horizontally ── */
+.ipod-scaler .now-playing {
+  align-items:center !important;
+  justify-content:center !important;
+}
+.ipod-scaler .album-art {
+  width:16vw !important; height:16vw !important;
+  margin:1.5vw auto 1vw !important;
+}
+.ipod-scaler .album-art-placeholder { font-size:9vw !important; }
+.ipod-scaler .track-info { width:100% !important; }
+.ipod-scaler .track-title  { font-size:3.5vw !important; max-width:90vw !important; }
+.ipod-scaler .track-artist { font-size:3vw !important;   max-width:90vw !important; }
+.ipod-scaler .progress-section {
+  width:100% !important;
+  padding:2vw 4vw 1vw !important;
+}
+.ipod-scaler .progress-bar-track { height:1vw !important; margin-bottom:1vw !important; }
+.ipod-scaler .progress-bar-fill::after {
+  width:2.5vw !important; height:2.5vw !important;
+  right:-1.2vw !important; top:-0.8vw !important;
+}
+.ipod-scaler .time-display { font-size:2.5vw !important; }
+.ipod-scaler .play-icon    { font-size:5vw !important; }
+.ipod-scaler .pb-icon      { font-size:3vw !important; }
+.ipod-scaler .play-state-row { gap:4vw !important; width:100% !important; justify-content:center !important; }
 
-    /* brand label between screen and wheel */
-    .ipod-scaler .ipod-brand {
-      font-size:3vw !important;
-      letter-spacing:0.4em !important;
-      margin:1.5vw 0 !important;
-      flex:0 0 auto !important;
-    }
+/* ── brand label ── */
+.ipod-scaler .ipod-brand {
+  font-size:3vw !important;
+  letter-spacing:0.4em !important;
+  margin:1.5vw 0 !important;
+  flex:0 0 auto !important;
+  text-align:center !important;
+  width:100% !important;
+}
 
-    /* wheel: fills remaining vertical space, stays a perfect circle */
-    .ipod-scaler .wheel-container {
-      flex:1 1 auto !important;
-      width:100% !important;
-      height:auto !important;
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      margin:0 !important;
-    }
-    .ipod-scaler .wheel {
-      width:min(52vw, 46dvh) !important;
-      height:min(52vw, 46dvh) !important;
-    }
+/* ── wheel: larger and perfectly centred ── */
+.ipod-scaler .wheel-container {
+  flex:1 1 auto !important;
+  width:100% !important;
+  height:auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 !important;
+  padding:1vw 0 !important;
+}
+.ipod-scaler .wheel {
+  /* Bigger: use more of the available space */
+  width:min(72vw, 48dvh) !important;
+  height:min(72vw, 48dvh) !important;
+}
 
-    /* wheel zone hit areas — easy tap targets */
-    .ipod-scaler .wz.t { top:2%;    left:20%; width:60%; height:26%; }
-    .ipod-scaler .wz.b { bottom:2%; left:20%; width:60%; height:26%; }
-    .ipod-scaler .wz.l { left:2%;   top:20%;  width:26%; height:60%; }
-    .ipod-scaler .wz.r { right:2%;  top:20%;  width:26%; height:60%; }
+/* wheel zone hit areas proportional to larger wheel */
+.ipod-scaler .wz.t { top:2%;    left:20%; width:60%; height:26%; }
+.ipod-scaler .wz.b { bottom:2%; left:20%; width:60%; height:26%; }
+.ipod-scaler .wz.l { left:2%;   top:20%;  width:26%; height:60%; }
+.ipod-scaler .wz.r { right:2%;  top:20%;  width:26%; height:60%; }
 
-    /* wheel label text */
-    .ipod-scaler .wl { font-size:2.5vw !important; }
-    .ipod-scaler .wl.t { top:4%; }
-    .ipod-scaler .wl.b { bottom:4%; }
-  }
+/* wheel label text */
+.ipod-scaler .wl { font-size:2.8vw !important; }
+.ipod-scaler .wl.t { top:4%; }
+.ipod-scaler .wl.b { bottom:4%; }
+```
+
+}
 </style>
+
 </head>
 <body>
 
@@ -447,210 +464,212 @@
         </div>
         <div class="screen-content">
 
-          <!-- Main Menu -->
-          <div class="view active" id="viewMainMenu">
-            <div class="menu-header">iPed</div>
-            <ul class="menu-list" id="listMain">
-              <li class="menu-item" data-action="nav:viewMusic">     <span class="mi-label"><span class="mi-title">Music</span></span>       <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewNowPlaying"><span class="mi-label"><span class="mi-title">Now Playing</span></span> <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewStats">     <span class="mi-label"><span class="mi-title">Stats</span></span>       <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewSettings">  <span class="mi-label"><span class="mi-title">Settings</span></span>    <span class="arr">&#9658;</span></li>
-              <li class="menu-item mobile-only" data-action="nav:viewFiles">   <span class="mi-label"><span class="mi-title">Files</span></span>       <span class="arr">&#9658;</span></li>
-            </ul>
-          </div>
-
-          <!-- Music -->
-          <div class="view off-right" id="viewMusic">
-            <div class="menu-header">Music</div>
-            <ul class="menu-list" id="listMusic">
-              <li class="menu-item" data-action="nav:viewArtists">  <span class="mi-label"><span class="mi-title">Artists</span></span>   <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewAlbums">   <span class="mi-label"><span class="mi-title">Albums</span></span>    <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewSongs">    <span class="mi-label"><span class="mi-title">Songs</span></span>     <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewPlaylists"><span class="mi-label"><span class="mi-title">Playlists</span></span> <span class="arr">&#9658;</span></li>
-            </ul>
-          </div>
-
-          <!-- Songs flat -->
-          <div class="view off-right" id="viewSongs">
-            <div class="menu-header">Songs</div>
-            <ul class="menu-list" id="listSongs"></ul>
-          </div>
-
-          <!-- Artists -->
-          <div class="view off-right" id="viewArtists">
-            <div class="menu-header">Artists</div>
-            <ul class="menu-list" id="listArtists"></ul>
-          </div>
-
-          <!-- Albums -->
-          <div class="view off-right" id="viewAlbums">
-            <div class="menu-header">Albums</div>
-            <ul class="menu-list" id="listAlbums"></ul>
-          </div>
-
-          <!-- Album Tracks -->
-          <div class="view off-right" id="viewAlbumTracks">
-            <div class="menu-header" id="albumTracksHeader">Album</div>
-            <ul class="menu-list" id="listAlbumTracks"></ul>
-          </div>
-
-          <!-- Delete Song confirm -->
-          <div class="view off-right" id="viewDeleteSong">
-            <div class="menu-header">Remove Song</div>
-            <ul class="menu-list" id="listDeleteSong">
-              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteSongInfo" data-noselect="1"></li>
-              <li class="menu-item" data-action="action:confirmDeleteSong" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove</span></span><span style="font-size:9px">&#10005;</span></li>
-              <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
-            </ul>
-          </div>
-
-          <!-- Delete Album confirm -->
-          <div class="view off-right" id="viewDeleteAlbum">
-            <div class="menu-header">Remove Album</div>
-            <ul class="menu-list" id="listDeleteAlbum">
-              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteAlbumInfo" data-noselect="1"></li>
-              <li class="menu-item" data-action="action:confirmDeleteAlbum" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove Album</span></span><span style="font-size:9px">&#10005;</span></li>
-              <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
-            </ul>
-          </div>
-
-          <!-- Artist Albums -->
-          <div class="view off-right" id="viewArtistAlbums">
-            <div class="menu-header" id="artistAlbumsHeader">Artist</div>
-            <ul class="menu-list" id="listArtistAlbums"></ul>
-          </div>
-
-          <!-- Playlists -->
-          <div class="view off-right" id="viewPlaylists">
-            <div class="menu-header">Playlists</div>
-            <ul class="menu-list">
-              <li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center;">No playlists</li>
-            </ul>
-          </div>
-
-          <!-- Settings -->
-          <div class="view off-right" id="viewSettings">
-            <div class="menu-header">Settings</div>
-            <ul class="menu-list" id="listSettings">
-              <li class="menu-item" data-action="toggle:shuffle"><span class="mi-label"><span class="mi-title">Shuffle</span></span><span id="shuffleVal" style="font-size:8px;color:#5a8099">Off</span></li>
-              <li class="menu-item" data-action="toggle:repeat"> <span class="mi-label"><span class="mi-title">Repeat</span></span>  <span id="repeatVal"  style="font-size:8px;color:#5a8099">Off</span></li>
-              <li class="menu-item" data-action="nav:viewColor">     <span class="mi-label"><span class="mi-title">Color</span></span>         <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="action:clearLibrary"><span class="mi-label"><span class="mi-title">Clear Library</span></span><span style="font-size:7px;color:#884444">&#10005;</span></li>
-            </ul>
-          </div>
-
-          <!-- Stats Menu -->
-          <div class="view off-right" id="viewStats">
-            <div class="menu-header">Stats</div>
-            <ul class="menu-list" id="listStats">
-              <li class="menu-item" data-action="nav:viewStatsOverview"> <span class="mi-label"><span class="mi-title">Overview</span></span>    <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewTopSongs">      <span class="mi-label"><span class="mi-title">Top Songs</span></span>    <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewTopArtists">    <span class="mi-label"><span class="mi-title">Top Artists</span></span>  <span class="arr">&#9658;</span></li>
-              <li class="menu-item" data-action="nav:viewTopAlbums">     <span class="mi-label"><span class="mi-title">Top Albums</span></span>   <span class="arr">&#9658;</span></li>
-            </ul>
-          </div>
-
-          <!-- Stats: Overview -->
-          <div class="view off-right" id="viewStatsOverview">
-            <div class="menu-header">Overview</div>
-            <div class="stats-overview" id="statsOverviewContent">
-              <div class="stat-row"><span class="stat-row-label">Top Song</span>    <span class="stat-row-value" id="ovTopSong">—</span></div>
-              <div class="stat-row"><span class="stat-row-label">Top Album</span>   <span class="stat-row-value" id="ovTopAlbum">—</span></div>
-              <div class="stat-row"><span class="stat-row-label">Top Artist</span>  <span class="stat-row-value" id="ovTopArtist">—</span></div>
-              <div class="stat-row"><span class="stat-row-label">Listened</span>    <span class="stat-row-value" id="ovListened">0 min</span></div>
-            </div>
-          </div>
-
-          <!-- Stats: Top Songs -->
-          <div class="view off-right" id="viewTopSongs">
-            <div class="menu-header">Top Songs</div>
-            <ul class="menu-list" id="listTopSongs"></ul>
-          </div>
-
-          <!-- Stats: Top Artists -->
-          <div class="view off-right" id="viewTopArtists">
-            <div class="menu-header">Top Artists</div>
-            <ul class="menu-list" id="listTopArtists"></ul>
-          </div>
-
-          <!-- Stats: Top Albums -->
-          <div class="view off-right" id="viewTopAlbums">
-            <div class="menu-header">Top Albums</div>
-            <ul class="menu-list" id="listTopAlbums"></ul>
-          </div>
-
-
-          <!-- Color Themes -->
-          <div class="view off-right" id="viewColor">
-            <div class="menu-header">Color</div>
-            <ul class="menu-list" id="listColor"></ul>
-          </div>
-
-          <!-- Files (mobile upload) -->
-          <div class="view off-right" id="viewFiles">
-            <div class="menu-header">Files</div>
-            <ul class="menu-list" id="listFiles">
-              <li class="menu-item" id="fileSongsItem">
-                <label for="fileInput" style="display:flex;align-items:center;justify-content:space-between;width:100%;cursor:pointer;">
-                  <span class="mi-label"><span class="mi-title">Add Songs</span></span><span class="arr">&#9658;</span>
-                </label>
-              </li>
-              <li class="menu-item" id="fileFolderItem">
-                <label for="folderInput" style="display:flex;align-items:center;justify-content:space-between;width:100%;cursor:pointer;">
-                  <span class="mi-label"><span class="mi-title">Add Folder</span></span><span class="arr">&#9658;</span>
-                </label>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Now Playing -->
-          <div class="view off-right" id="viewNowPlaying">
-            <div class="now-playing">
-              <div class="album-art" id="npArtBox">
-                <div class="album-art-placeholder" id="npArtPlaceholder" style="background:linear-gradient(135deg,#1a4f7a,#4a9fd4,#1a4f7a)">&#127925;</div>
-                <img class="album-art-img" id="npArtImg" src="" alt="">
-              </div>
-              <div class="track-info">
-                <div class="track-title"  id="npTitle">No Track</div>
-                <div class="track-artist" id="npArtist">&#8212;</div>
-              </div>
-              <div class="progress-section">
-                <div class="progress-bar-track" id="progressTrack">
-                  <div class="progress-bar-fill" id="progressFill"></div>
-                </div>
-                <div class="time-display">
-                  <span id="timeEl">0:00</span>
-                  <span id="timeRem">-0:00</span>
-                </div>
-              </div>
-              <div class="play-state-row">
-                <span class="pb-icon" id="shuffleIcon">&#8644;</span>
-                <span class="play-icon" id="playIcon">&#9654;</span>
-                <span class="pb-icon"  id="repeatIcon">&#8634;</span>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /screen-content -->
-      </div><!-- /screen -->
-    </div><!-- /screen-bezel -->
-
-    <div class="ipod-brand">iPed</div>
-
-    <div class="wheel-container">
-      <div class="wheel" id="wheel">
-        <div class="flash-ring" id="flashRing"></div>
-        <div class="wl t">MENU</div>
-        <div class="wl b">&#9654;II</div>
-        <div class="wl l">&#9664;&#9664;</div>
-        <div class="wl r">&#9654;&#9654;</div>
-        <div class="wz t" id="wzTop"></div>
-        <div class="wz b" id="wzBot"></div>
-        <div class="wz l" id="wzLeft"></div>
-        <div class="wz r" id="wzRight"></div>
-        <div class="center-btn" id="centerBtn"></div>
+```
+      <!-- Main Menu -->
+      <div class="view active" id="viewMainMenu">
+        <div class="menu-header">iPed</div>
+        <ul class="menu-list" id="listMain">
+          <li class="menu-item" data-action="nav:viewMusic">     <span class="mi-label"><span class="mi-title">Music</span></span>       <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewNowPlaying"><span class="mi-label"><span class="mi-title">Now Playing</span></span> <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewStats">     <span class="mi-label"><span class="mi-title">Stats</span></span>       <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewSettings">  <span class="mi-label"><span class="mi-title">Settings</span></span>    <span class="arr">&#9658;</span></li>
+          <li class="menu-item mobile-only" data-action="nav:viewFiles">   <span class="mi-label"><span class="mi-title">Files</span></span>       <span class="arr">&#9658;</span></li>
+        </ul>
       </div>
-    </div>
+
+      <!-- Music -->
+      <div class="view off-right" id="viewMusic">
+        <div class="menu-header">Music</div>
+        <ul class="menu-list" id="listMusic">
+          <li class="menu-item" data-action="nav:viewArtists">  <span class="mi-label"><span class="mi-title">Artists</span></span>   <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewAlbums">   <span class="mi-label"><span class="mi-title">Albums</span></span>    <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewSongs">    <span class="mi-label"><span class="mi-title">Songs</span></span>     <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewPlaylists"><span class="mi-label"><span class="mi-title">Playlists</span></span> <span class="arr">&#9658;</span></li>
+        </ul>
+      </div>
+
+      <!-- Songs flat -->
+      <div class="view off-right" id="viewSongs">
+        <div class="menu-header">Songs</div>
+        <ul class="menu-list" id="listSongs"></ul>
+      </div>
+
+      <!-- Artists -->
+      <div class="view off-right" id="viewArtists">
+        <div class="menu-header">Artists</div>
+        <ul class="menu-list" id="listArtists"></ul>
+      </div>
+
+      <!-- Albums -->
+      <div class="view off-right" id="viewAlbums">
+        <div class="menu-header">Albums</div>
+        <ul class="menu-list" id="listAlbums"></ul>
+      </div>
+
+      <!-- Album Tracks -->
+      <div class="view off-right" id="viewAlbumTracks">
+        <div class="menu-header" id="albumTracksHeader">Album</div>
+        <ul class="menu-list" id="listAlbumTracks"></ul>
+      </div>
+
+      <!-- Delete Song confirm -->
+      <div class="view off-right" id="viewDeleteSong">
+        <div class="menu-header">Remove Song</div>
+        <ul class="menu-list" id="listDeleteSong">
+          <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteSongInfo" data-noselect="1"></li>
+          <li class="menu-item" data-action="action:confirmDeleteSong" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove</span></span><span style="font-size:9px">&#10005;</span></li>
+          <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
+        </ul>
+      </div>
+
+      <!-- Delete Album confirm -->
+      <div class="view off-right" id="viewDeleteAlbum">
+        <div class="menu-header">Remove Album</div>
+        <ul class="menu-list" id="listDeleteAlbum">
+          <li class="menu-item" style="color:#5a8099;font-size:7px;padding:4px 6px;min-height:0;border-bottom:1px solid rgba(0,0,0,0.06)" id="deleteAlbumInfo" data-noselect="1"></li>
+          <li class="menu-item" data-action="action:confirmDeleteAlbum" style="color:#c84444"><span class="mi-label"><span class="mi-title">Remove Album</span></span><span style="font-size:9px">&#10005;</span></li>
+          <li class="menu-item" data-action="nav:back"><span class="mi-label"><span class="mi-title">Cancel</span></span><span class="arr">&#9650;</span></li>
+        </ul>
+      </div>
+
+      <!-- Artist Albums -->
+      <div class="view off-right" id="viewArtistAlbums">
+        <div class="menu-header" id="artistAlbumsHeader">Artist</div>
+        <ul class="menu-list" id="listArtistAlbums"></ul>
+      </div>
+
+      <!-- Playlists -->
+      <div class="view off-right" id="viewPlaylists">
+        <div class="menu-header">Playlists</div>
+        <ul class="menu-list">
+          <li class="menu-item" style="color:#5a8099;font-size:7px;padding:5px 6px;justify-content:center;">No playlists</li>
+        </ul>
+      </div>
+
+      <!-- Settings -->
+      <div class="view off-right" id="viewSettings">
+        <div class="menu-header">Settings</div>
+        <ul class="menu-list" id="listSettings">
+          <li class="menu-item" data-action="toggle:shuffle"><span class="mi-label"><span class="mi-title">Shuffle</span></span><span id="shuffleVal" style="font-size:8px;color:#5a8099">Off</span></li>
+          <li class="menu-item" data-action="toggle:repeat"> <span class="mi-label"><span class="mi-title">Repeat</span></span>  <span id="repeatVal"  style="font-size:8px;color:#5a8099">Off</span></li>
+          <li class="menu-item" data-action="nav:viewColor">     <span class="mi-label"><span class="mi-title">Color</span></span>         <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="action:clearLibrary"><span class="mi-label"><span class="mi-title">Clear Library</span></span><span style="font-size:7px;color:#884444">&#10005;</span></li>
+        </ul>
+      </div>
+
+      <!-- Stats Menu -->
+      <div class="view off-right" id="viewStats">
+        <div class="menu-header">Stats</div>
+        <ul class="menu-list" id="listStats">
+          <li class="menu-item" data-action="nav:viewStatsOverview"> <span class="mi-label"><span class="mi-title">Overview</span></span>    <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewTopSongs">      <span class="mi-label"><span class="mi-title">Top Songs</span></span>    <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewTopArtists">    <span class="mi-label"><span class="mi-title">Top Artists</span></span>  <span class="arr">&#9658;</span></li>
+          <li class="menu-item" data-action="nav:viewTopAlbums">     <span class="mi-label"><span class="mi-title">Top Albums</span></span>   <span class="arr">&#9658;</span></li>
+        </ul>
+      </div>
+
+      <!-- Stats: Overview -->
+      <div class="view off-right" id="viewStatsOverview">
+        <div class="menu-header">Overview</div>
+        <div class="stats-overview" id="statsOverviewContent">
+          <div class="stat-row"><span class="stat-row-label">Top Song</span>    <span class="stat-row-value" id="ovTopSong">—</span></div>
+          <div class="stat-row"><span class="stat-row-label">Top Album</span>   <span class="stat-row-value" id="ovTopAlbum">—</span></div>
+          <div class="stat-row"><span class="stat-row-label">Top Artist</span>  <span class="stat-row-value" id="ovTopArtist">—</span></div>
+          <div class="stat-row"><span class="stat-row-label">Listened</span>    <span class="stat-row-value" id="ovListened">0 min</span></div>
+        </div>
+      </div>
+
+      <!-- Stats: Top Songs -->
+      <div class="view off-right" id="viewTopSongs">
+        <div class="menu-header">Top Songs</div>
+        <ul class="menu-list" id="listTopSongs"></ul>
+      </div>
+
+      <!-- Stats: Top Artists -->
+      <div class="view off-right" id="viewTopArtists">
+        <div class="menu-header">Top Artists</div>
+        <ul class="menu-list" id="listTopArtists"></ul>
+      </div>
+
+      <!-- Stats: Top Albums -->
+      <div class="view off-right" id="viewTopAlbums">
+        <div class="menu-header">Top Albums</div>
+        <ul class="menu-list" id="listTopAlbums"></ul>
+      </div>
+
+
+      <!-- Color Themes -->
+      <div class="view off-right" id="viewColor">
+        <div class="menu-header">Color</div>
+        <ul class="menu-list" id="listColor"></ul>
+      </div>
+
+      <!-- Files (mobile upload) -->
+      <div class="view off-right" id="viewFiles">
+        <div class="menu-header">Files</div>
+        <ul class="menu-list" id="listFiles">
+          <li class="menu-item" id="fileSongsItem">
+            <label for="fileInput" style="display:flex;align-items:center;justify-content:space-between;width:100%;cursor:pointer;">
+              <span class="mi-label"><span class="mi-title">Add Songs</span></span><span class="arr">&#9658;</span>
+            </label>
+          </li>
+          <li class="menu-item" id="fileFolderItem">
+            <label for="folderInput" style="display:flex;align-items:center;justify-content:space-between;width:100%;cursor:pointer;">
+              <span class="mi-label"><span class="mi-title">Add Folder</span></span><span class="arr">&#9658;</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Now Playing -->
+      <div class="view off-right" id="viewNowPlaying">
+        <div class="now-playing">
+          <div class="album-art" id="npArtBox">
+            <div class="album-art-placeholder" id="npArtPlaceholder" style="background:linear-gradient(135deg,#1a4f7a,#4a9fd4,#1a4f7a)">&#127925;</div>
+            <img class="album-art-img" id="npArtImg" src="" alt="">
+          </div>
+          <div class="track-info">
+            <div class="track-title"  id="npTitle">No Track</div>
+            <div class="track-artist" id="npArtist">&#8212;</div>
+          </div>
+          <div class="progress-section">
+            <div class="progress-bar-track" id="progressTrack">
+              <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+              <span id="timeEl">0:00</span>
+              <span id="timeRem">-0:00</span>
+            </div>
+          </div>
+          <div class="play-state-row">
+            <span class="pb-icon" id="shuffleIcon">&#8644;</span>
+            <span class="play-icon" id="playIcon">&#9654;</span>
+            <span class="pb-icon"  id="repeatIcon">&#8634;</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screen-content -->
+  </div><!-- /screen -->
+</div><!-- /screen-bezel -->
+
+<div class="ipod-brand">iPed</div>
+
+<div class="wheel-container">
+  <div class="wheel" id="wheel">
+    <div class="flash-ring" id="flashRing"></div>
+    <div class="wl t">MENU</div>
+    <div class="wl b">&#9654;II</div>
+    <div class="wl l">&#9664;&#9664;</div>
+    <div class="wl r">&#9654;&#9654;</div>
+    <div class="wz t" id="wzTop"></div>
+    <div class="wz b" id="wzBot"></div>
+    <div class="wz l" id="wzLeft"></div>
+    <div class="wz r" id="wzRight"></div>
+    <div class="center-btn" id="centerBtn"></div>
+  </div>
+</div>
+```
 
   </div><!-- /ipod -->
 </div><!-- /scaler -->
@@ -1919,5 +1938,6 @@ updateNP();
 // Don't call rebuildLists here — restoreFromIDB calls it after loading
 restoreFromIDB();
 </script>
+
 </body>
 </html>
